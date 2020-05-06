@@ -19,3 +19,6 @@ vendor/
 ### Go Patch ###
 /vendor/
 /Godeps/
+
+# Migration files
+migration/
