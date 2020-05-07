@@ -14,6 +14,7 @@ func init() {
 // MigrationCmd ...
 var MigrationCmd = &cobra.Command{
 	Use:              "migration",
+	Aliases:          []string{"m"},
 	PersistentPreRun: mkdirMigrations,
 }
 
