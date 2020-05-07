@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TableCmd generates a migration file.
+// TableCmd generates migration files to create (and drop) a table.
 var TableCmd = &cobra.Command{
 	Use:   "table [name]",
 	Short: "Generate a migration file to create a table named [name].",

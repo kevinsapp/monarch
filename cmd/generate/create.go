@@ -8,7 +8,7 @@ func init() {
 	CreateCmd.AddCommand(TableCmd)
 }
 
-// CreateCmd generates a migration file.
+// CreateCmd ...
 var CreateCmd = &cobra.Command{
 	Use: "create",
 }
