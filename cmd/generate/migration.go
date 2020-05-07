@@ -17,13 +17,23 @@ var MigrationCmd = &cobra.Command{
 
 		// Make a "migrations" directory in the current working directory,
 		// unless it already exists.
-		dir := "migrations"       // directory name
-		var fm os.FileMode = 0755 // 0755 Unix file permissions
-		err := os.MkdirAll(dir, fm)
+		var (
+			dn string      = "migrations" // directory name
+			fm os.FileMode = 0755         // 0755 Unix file permissions
+		)
+		err := os.MkdirAll(dn, fm)
 		if err != nil {
-			fmt.Printf("Error creating %s directory: %s\n", dir, err)
+			fmt.Printf("Error creating %s directory: %s\n", dn, err)
 			return err
 		}
+
+		// Create a new migration file in the migrations directory.
+		// fname := "test.sql"
+		// f, err := os.Create(fname)
+		// if err != nil {
+		// 	fmt.Printf("Error creating %s file: %s\n", fname, err)
+		// 	return err
+		// }
 
 		return err
 	},
