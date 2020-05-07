@@ -16,15 +16,15 @@ var TableCmd = &cobra.Command{
 		fmt.Println("Generating migration files...")
 
 		// Make directory named `migrations`
-		err := mkdirMigations()
-		if err != nil {
-			return err
-		}
+		// err := mkdirMigations()
+		// if err != nil {
+		// 	return err
+		// }
 
 		ts := time.Now().UnixNano()
 		fn := fmt.Sprintf("migrations/%d_create_table_users_up.sql", ts)
 		fmt.Println(fn)
-		_, err = os.Create(fn)
+		_, err := os.Create(fn)
 		if err != nil {
 			fmt.Printf("Error creating %s file: %s\n", fn, err)
 			return err
