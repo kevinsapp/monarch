@@ -83,8 +83,13 @@ func dnTableMigration(timestamp int64, name string) (*os.File, error) {
 		return nil, err
 	}
 
+	// Generate SQL to create a table with name [name].
+	sql, err := dropTableSQL(name)
+	if err != nil {
+		return nil, err
+	}
+
 	// Write SQL to the file.
-	sql := dropTableSQL(name)
 	_, err = f.WriteString(sql)
 	if err != nil {
 		return nil, err
@@ -124,13 +129,20 @@ CREATE TABLE {{.Name}} (
 }
 
 // dropTableSQL returns a string of SQL to drop a table.
-func dropTableSQL(name string) string {
-	sql := `-- Down migration for %s table
+func dropTableSQL(name string) (string, error) {
+	sql := `-- Down migration for {{.Name}} table
 
-DROP TABLE %s;
+DROP TABLE {{.Name}};
 `
 
-	sql = fmt.Sprintf(sql, name, name)
+	// Define a data structure to apply to the SQL template.
+	data := struct {
+		Name string
+	}{
+		Name: name,
+	}
 
-	return sql
+	sql, err := templateAsSQL(data, sql)
+
+	return sql, err
 }
