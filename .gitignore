@@ -20,5 +20,5 @@ vendor/
 /vendor/
 /Godeps/
 
-# Migration files
-migration/
+# Ignore migration files (sometimes generated while testing)
+migrations/
