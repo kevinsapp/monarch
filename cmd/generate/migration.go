@@ -27,6 +27,7 @@ func createMigration(fname, sqlt string, data interface{}) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 
 	// Process SQL template
 	sql, err := templateAsSQL(data, sqlt)

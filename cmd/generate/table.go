@@ -36,7 +36,6 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 	td := table{args[0]}
 
 	// Create an "up" migration file.
-	// _, err := upTableMigration(timestamp, name)
 	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name)
 	_, err := createMigration(fn, sqltCreateTable, td)
 	if err != nil {
@@ -44,7 +43,6 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create a "down" migration file.
-	// _, err = dnTableMigration(timestamp, name)
 	fn = fmt.Sprintf("migrations/%d_create_table_%s_down.sql", timestamp, td.Name)
 	_, err = createMigration(fn, sqltDropTable, td)
 	if err != nil {
