@@ -1,4 +1,4 @@
-package generate
+package cmd
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	MigrationCmd.AddCommand(CreateCmd)
+	generateCmd.AddCommand(MigrationCmd)
 }
 
 // MigrationCmd ...

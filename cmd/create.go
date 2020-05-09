@@ -1,11 +1,11 @@
-package generate
+package cmd
 
 import (
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	CreateCmd.AddCommand(TableCmd)
+	MigrationCmd.AddCommand(CreateCmd)
 }
 
 // CreateCmd ...

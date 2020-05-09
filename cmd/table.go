@@ -1,4 +1,4 @@
-package generate
+package cmd
 
 import (
 	"errors"
@@ -11,6 +11,10 @@ import (
 // table ...
 type table struct {
 	Name string
+}
+
+func init() {
+	CreateCmd.AddCommand(TableCmd)
 }
 
 // TableCmd generates an "up" migration file to create a table and a "down" migration

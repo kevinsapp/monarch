@@ -1,4 +1,4 @@
-package generate
+package cmd
 
 // SQL templates for TABLE operaions
 const (

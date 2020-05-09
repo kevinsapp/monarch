@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"github.com/kevinsapp/monarch/cmd/generate"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	generateCmd.AddCommand(generate.MigrationCmd)
 	rootCmd.AddCommand(generateCmd)
 }
 
