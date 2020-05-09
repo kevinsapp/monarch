@@ -14,12 +14,12 @@ type table struct {
 }
 
 func init() {
-	CreateCmd.AddCommand(TableCmd)
+	createCmd.AddCommand(tableCmd)
 }
 
-// TableCmd generates an "up" migration file to create a table and a "down" migration
+// tableCmd generates an "up" migration file to create a table and a "down" migration
 // file to drop that table.
-var TableCmd = &cobra.Command{
+var tableCmd = &cobra.Command{
 	Use:   "table [name]",
 	Short: "Generate migration files to create a table named [name].",
 	Long: `Generate an "up" migration file to create a table named [name]

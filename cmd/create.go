@@ -5,10 +5,10 @@ import (
 )
 
 func init() {
-	MigrationCmd.AddCommand(CreateCmd)
+	migrationCmd.AddCommand(createCmd)
 }
 
-// CreateCmd ...
-var CreateCmd = &cobra.Command{
+// createCmd ...
+var createCmd = &cobra.Command{
 	Use: "create",
 }

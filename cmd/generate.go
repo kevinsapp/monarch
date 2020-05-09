@@ -8,7 +8,7 @@ func init() {
 	rootCmd.AddCommand(generateCmd)
 }
 
-// Generate command
+// generateCmd ...
 var generateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"g"},

@@ -10,11 +10,11 @@ import (
 )
 
 func init() {
-	generateCmd.AddCommand(MigrationCmd)
+	generateCmd.AddCommand(migrationCmd)
 }
 
-// MigrationCmd ...
-var MigrationCmd = &cobra.Command{
+// migrationCmd ...
+var migrationCmd = &cobra.Command{
 	Use:              "migration",
 	Aliases:          []string{"m"},
 	PersistentPreRun: mkdirMigrations,
