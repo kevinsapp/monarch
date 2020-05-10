@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/spf13/cobra"
 )
 
@@ -49,6 +50,7 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
 	td := table{args[0]}
+	td.Name = strcase.ToSnake(td.Name)
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name)
@@ -77,6 +79,7 @@ func dropTableMigrations(cmd *cobra.Command, args []string) error {
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
 	td := table{args[0]}
+	td.Name = strcase.ToSnake(td.Name)
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_drop_table_%s_up.sql", timestamp, td.Name)

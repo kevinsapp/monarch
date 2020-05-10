@@ -68,7 +68,7 @@ func templateAsSQL(data interface{}, sqlt string) (string, error) {
 		return "", err
 	}
 
-	// Apply the data structure to the template and write to a buffer.
+	// Apply the data structure to the template and write the result to a buffer.
 	var tbuf bytes.Buffer
 	err = t.Execute(&tbuf, data)
 	if err != nil {
