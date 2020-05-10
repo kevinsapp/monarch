@@ -28,7 +28,7 @@ and a companion "down" migration file to drop that table.`,
 	RunE: createTableMigrations,
 }
 
-// dropTableCmd ...
+// dropTableCmd generates an "up" migration file to drop a table.
 var dropTableCmd = &cobra.Command{
 	Use:   "table [name]",
 	Short: "Generate an migration file to drop a table named [name].",

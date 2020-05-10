@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Unit test createTableMigrations()
 func TestCreateTableMigrations(t *testing.T) {
 	// Create a migrations directory.
 	var cmd = &cobra.Command{}
@@ -47,6 +48,7 @@ func TestCreateTableMigrations(t *testing.T) {
 	}
 }
 
+// Unit test dropTableMigrations()
 func TestDropTableMigrations(t *testing.T) {
 	// Create a migrations directory.
 	var cmd = &cobra.Command{}
