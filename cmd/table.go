@@ -14,17 +14,28 @@ type table struct {
 }
 
 func init() {
-	createCmd.AddCommand(tableCmd)
+	createCmd.AddCommand(createTableCmd)
+	dropCmd.AddCommand(dropTableCmd)
 }
 
-// tableCmd generates an "up" migration file to create a table and a "down" migration
+// createTableCmd generates an "up" migration file to create a table and a "down" migration
 // file to drop that table.
-var tableCmd = &cobra.Command{
+var createTableCmd = &cobra.Command{
 	Use:   "table [name]",
 	Short: "Generate migration files to create a table named [name].",
 	Long: `Generate an "up" migration file to create a table named [name]
 and a companion "down" migration file to drop that table.`,
 	RunE: createTableMigrations,
+}
+
+// dropTableCmd ...
+var dropTableCmd = &cobra.Command{
+	Use:   "table [name]",
+	Short: "Generate an migration file to drop a table named [name].",
+	Long: `Generate an "up" migration file to drop a table named [name]
+This migration is irreversible and any data in the table will be lost
+when the migration is run and the table has been dropped.`,
+	RunE: dropTableMigrations,
 }
 
 // createTableMigrations creates an "up" migration file to create a table and
@@ -49,6 +60,27 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 	// Create a "down" migration file.
 	fn = fmt.Sprintf("migrations/%d_create_table_%s_down.sql", timestamp, td.Name)
 	_, err = createMigration(fn, sqltDropTable, td)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+// dropTableMigrations creates an "up" migration file to drop a table.
+func dropTableMigrations(cmd *cobra.Command, args []string) error {
+	// Caller should supply a table name as the first argument.
+	if len(args) < 1 {
+		return errors.New("requires a name argument")
+	}
+
+	// Set timestamp and table data.
+	timestamp := time.Now().UnixNano()
+	td := table{args[0]}
+
+	// Create an "up" migration file.
+	fn := fmt.Sprintf("migrations/%d_drop_table_%s_up.sql", timestamp, td.Name)
+	_, err := createMigration(fn, sqltDropTable, td)
 	if err != nil {
 		return err
 	}

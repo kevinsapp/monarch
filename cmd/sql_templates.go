@@ -3,7 +3,7 @@ package cmd
 // SQL templates for TABLE operaions
 const (
 	// sqltCreateTable is a SQL template for creating tables.
-	sqltCreateTable string = `--Up migration for {{.Name}} table
+	sqltCreateTable string = `-- Table: {{.Name}}
 
 CREATE TABLE {{.Name}} (
 	id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE {{.Name}} (
 );
 `
 	// sqltDropTable is a SQL template for dropping tables.
-	sqltDropTable string = `-- Down migration for {{.Name}} table
+	sqltDropTable string = `-- Table: {{.Name}}
 
 DROP TABLE {{.Name}};
 `

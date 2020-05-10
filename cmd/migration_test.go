@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	testCreateTableSQL string = `--Up migration for users table
+	testCreateTableSQL string = `-- Table: users
 
 CREATE TABLE users (
 	id uuid DEFAULT gen_random_uuid() NOT NULL,
