@@ -10,37 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	testCreateTableSQL string = `-- Table: users
-
-CREATE TABLE users (
-	id uuid DEFAULT gen_random_uuid() NOT NULL,
-
-	-- Specify additional fields here.
-
-
-	-- Timestamps
-	created_at timestamp(6) without time zone NOT NULL,
-	updated_at timestamp(6) without time zone NOT NULL,
-	CONSTRAINT users_pkey PRIMARY KEY (id)
-);
-`
-	testDropTableSQL string = `-- Table: users
-
-DROP TABLE users;
-`
-
-	testRenameTableUpSQL string = `-- Table: users
-
-ALTER TABLE users RENAME TO people;
-`
-
-	testRenameTableDownSQL string = `-- Table: people
-
-ALTER TABLE people RENAME TO users;
-`
-)
-
 // Unit test createMigration()
 func TestCreateMigration(t *testing.T) {
 	// Create a migrations directory.
