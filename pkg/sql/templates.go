@@ -2,7 +2,7 @@ package sql
 
 // SQL templates for TABLE operaions
 const (
-	// sqltCreateTable is a SQL template for creating tables.
+	// CreateTableTmpl is a SQL template for creating tables.
 	CreateTableTmpl string = `-- Table: {{.Name}}
 
 CREATE TABLE {{.Name}} (
@@ -17,13 +17,13 @@ CREATE TABLE {{.Name}} (
 	CONSTRAINT {{.Name}}_pkey PRIMARY KEY (id)
 );
 `
-	// sqltDropTable is a SQL template for dropping tables.
+	// DropTableTmpl is a SQL template for dropping tables.
 	DropTableTmpl string = `-- Table: {{.Name}}
 
 DROP TABLE {{.Name}};
 `
 
-	// sqltRenameTable is a SQL template for renaming tables.
+	// RenameTableTmpl is a SQL template for renaming tables.
 	RenameTableTmpl string = `-- Table: {{.Name}}
 
 ALTER TABLE {{.Name}} RENAME TO {{.NewName}};
