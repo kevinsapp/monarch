@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -24,6 +23,20 @@ CREATE TABLE users (
 	updated_at timestamp(6) without time zone NOT NULL,
 	CONSTRAINT users_pkey PRIMARY KEY (id)
 );
+`
+	testDropTableSQL string = `-- Table: users
+
+DROP TABLE users;
+`
+
+	testRenameTableUpSQL string = `-- Table: users
+
+ALTER TABLE users RENAME TO people;
+`
+
+	testRenameTableDownSQL string = `-- Table: people
+
+ALTER TABLE people RENAME TO users;
 `
 )
 
@@ -54,20 +67,13 @@ func TestCreateMigration(t *testing.T) {
 		t.Errorf("want %s; got %s", exp, act)
 	}
 
-	// Read in contents.
-	f, err = os.Open(fn)
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := ioutil.ReadAll(f)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close() // Do cleanup
-
 	// Check that the migration file contains the expected content.
 	exp = testCreateTableSQL
-	act = string(b)
+	act, err = fileAsString(fn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	if exp != act {
 		t.Errorf("want %s; got %s", exp, act)
 	}

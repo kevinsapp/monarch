@@ -15,7 +15,7 @@ func TestCreateTableMigrations(t *testing.T) {
 	cmd := &cobra.Command{}
 	args := make([]string, 0)
 	mkdirMigrations(cmd, args)
-	defer os.RemoveAll("migrations") // Do cleanup
+	defer os.RemoveAll(migrationsDir) // Do cleanup
 
 	// Run createTableMigrations()
 	args = append(args, "users")
@@ -25,7 +25,7 @@ func TestCreateTableMigrations(t *testing.T) {
 	}
 
 	// Get the list of files in the migrations directory.
-	files, err := ioutil.ReadDir("migrations")
+	files, err := ioutil.ReadDir(migrationsDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,16 +35,40 @@ func TestCreateTableMigrations(t *testing.T) {
 		t.Errorf("wrong number of files created: want 2; got %d", l)
 	}
 
-	// Check that the up migration file was created.
-	matched, _ := regexp.MatchString(`_create_table_users_up.sql`, files[1].Name())
+	// Check that the up migration file has the correct name.
+	exp := `_create_table_users_up.sql`
+	matched, _ := regexp.MatchString(exp, files[1].Name())
 	if !matched {
-		t.Error("up migration file not found")
+		t.Errorf("up migration file with name %s not found", exp)
 	}
 
-	// Check that the down migration file was created.
+	// Check that the up migration file has the expected content.
+	exp = testCreateTableSQL
+	act, err := fileAsString(migrationsDir + "/" + files[1].Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if exp != act {
+		t.Errorf("want %s\n; got %s\n", exp, act)
+	}
+
+	// Check that the down migration file has the correct name.
+	exp = `_create_table_users_down.sql`
 	matched, _ = regexp.MatchString(`_create_table_users_down.sql`, files[0].Name())
 	if !matched {
-		t.Error("down migration file not found")
+		t.Errorf("down migration file with name %s not found", exp)
+	}
+
+	// Check that the down migration file has the expected content.
+	exp = testDropTableSQL
+	act, err = fileAsString(migrationsDir + "/" + files[0].Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if exp != act {
+		t.Errorf("want %s\n; got %s\n", exp, act)
 	}
 }
 
@@ -74,10 +98,22 @@ func TestDropTableMigrations(t *testing.T) {
 		t.Errorf("wrong number of files created: want 1; got %d", l)
 	}
 
-	// Check that the up migration file was created.
-	matched, _ := regexp.MatchString(`_drop_table_users_up.sql`, files[0].Name())
+	// Check that the up migration file has to correct name.
+	exp := `_drop_table_users_up.sql`
+	matched, _ := regexp.MatchString(exp, files[0].Name())
 	if !matched {
-		t.Error("up migration file not found")
+		t.Errorf("up migration file with name %s not found", exp)
+	}
+
+	// Check that the up migration file has the expected content.
+	exp = testDropTableSQL
+	act, err := fileAsString(migrationsDir + "/" + files[0].Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if exp != act {
+		t.Errorf("want %s\n; got %s\n", exp, act)
 	}
 }
 
@@ -89,7 +125,7 @@ func TestRenameTableMigrations(t *testing.T) {
 	mkdirMigrations(cmd, args)
 	defer os.RemoveAll("migrations") // Do cleanup
 
-	// Run createTableMigrations()
+	// Run renameTableMigrations()
 	args = append(args, "users")  // first argument
 	args = append(args, "people") // second argument
 	err := renameTableMigrations(cmd, args)
@@ -108,15 +144,39 @@ func TestRenameTableMigrations(t *testing.T) {
 		t.Errorf("wrong number of files created: want 2; got %d", l)
 	}
 
-	// Check that the up migration file was created.
-	matched, _ := regexp.MatchString(`_rename_table_users_up.sql`, files[1].Name())
+	// Check that the up migration has the correct name.
+	exp := `_rename_table_users_up.sql`
+	matched, _ := regexp.MatchString(exp, files[1].Name())
 	if !matched {
-		t.Error("up migration file not found")
+		t.Errorf("up migration file with name %s not found", exp)
+	}
+
+	// Check that the up migration file has the expected content.
+	exp = testRenameTableUpSQL
+	act, err := fileAsString(migrationsDir + "/" + files[1].Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if exp != act {
+		t.Errorf("want %s\n; got %s\n", exp, act)
 	}
 
 	// Check that the down migration file was created.
-	matched, _ = regexp.MatchString(`_rename_table_users_down.sql`, files[0].Name())
+	exp = `_rename_table_users_down.sql`
+	matched, _ = regexp.MatchString(exp, files[0].Name())
 	if !matched {
-		t.Error("down migration file not found")
+		t.Errorf("down migration file with name %s not found", exp)
+	}
+
+	// Check that the down migration file has the expected content.
+	exp = testRenameTableDownSQL
+	act, err = fileAsString(migrationsDir + "/" + files[0].Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if exp != act {
+		t.Errorf("want %s\n; got %s\n", exp, act)
 	}
 }

@@ -3,11 +3,14 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"text/template"
 
 	"github.com/spf13/cobra"
 )
+
+const migrationsDir string = "migrations"
 
 func init() {
 	generateCmd.AddCommand(migrationCmd)
@@ -79,4 +82,22 @@ func templateAsSQL(data interface{}, sqlt string) (string, error) {
 	sql := tbuf.String()
 
 	return sql, err
+}
+
+func fileAsString(fn string) (string, error) {
+	// Open file with name fn
+	f, err := os.Open(fn)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close() // Do cleanup
+
+	// Read file contents to buffer
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+
+	// Return file contents as a string
+	return string(b), nil
 }
