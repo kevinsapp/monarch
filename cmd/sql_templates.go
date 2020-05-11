@@ -22,4 +22,10 @@ CREATE TABLE {{.Name}} (
 
 DROP TABLE {{.Name}};
 `
+
+	// sqltRenameTable is a SQL template for renaming tables.
+	sqltRenameTable string = `-- Table: {{.Name}}
+
+ALTER TABLE {{.Name}} RENAME TO {{.NewName}};
+`
 )

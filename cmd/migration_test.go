@@ -37,7 +37,8 @@ func TestCreateMigration(t *testing.T) {
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
-	td := table{"users"}
+	td := table{}
+	td.Name = "users"
 
 	// Create a migration file.
 	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name)
@@ -107,7 +108,8 @@ func TestMkdirMigrations(t *testing.T) {
 // Unit test templateAsSQL
 func TestTemplateAsSQL(t *testing.T) {
 	// Set template data.
-	td := table{"users"}
+	td := table{}
+	td.Name = "users"
 
 	// Run templateAsSQL()
 	act, err := templateAsSQL(td, sqltCreateTable)
