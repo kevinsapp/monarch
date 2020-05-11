@@ -1,5 +1,11 @@
 package sql
 
+// table ...
+type table struct {
+	Name    string
+	NewName string
+}
+
 // SQL templates for TABLE operaions
 const (
 	// CreateTableTmpl is a SQL template for creating tables.

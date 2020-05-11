@@ -20,5 +20,8 @@ vendor/
 /vendor/
 /Godeps/
 
-# Ignore migration files (sometimes generated while testing)
+# Ignore migrations folder and files (sometimes generated while testing)
 migrations/
+
+# Ignore tmp directory (sometime generated while testing)
+tmp/

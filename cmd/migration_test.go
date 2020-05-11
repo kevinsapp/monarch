@@ -80,22 +80,3 @@ func TestMkdirMigrations(t *testing.T) {
 		t.Errorf("want %s; got %s", exp, act)
 	}
 }
-
-// Unit test templateAsSQL
-func TestTemplateAsSQL(t *testing.T) {
-	// Set template data.
-	td := table{}
-	td.Name = "users"
-
-	// Run templateAsSQL()
-	act, err := sql.ProcessTmpl(td, sql.CreateTableTmpl)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Check that processed SQL matches the expected SQL.
-	exp := testCreateTableSQL
-	if exp != act {
-		t.Errorf("want %s; got %s", exp, act)
-	}
-}
