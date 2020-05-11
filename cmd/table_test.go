@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/kevinsapp/monarch/pkg/sql"
 	"github.com/spf13/cobra"
 )
 
@@ -76,7 +77,7 @@ func TestCreateTableMigrations(t *testing.T) {
 
 	// Check that the up migration file has the expected content.
 	exp = testCreateTableSQL
-	act, err := fileAsString(migrationsDir + "/" + files[1].Name())
+	act, err := sql.FileAsString(migrationsDir + "/" + files[1].Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +95,7 @@ func TestCreateTableMigrations(t *testing.T) {
 
 	// Check that the down migration file has the expected content.
 	exp = testDropTableSQL
-	act, err = fileAsString(migrationsDir + "/" + files[0].Name())
+	act, err = sql.FileAsString(migrationsDir + "/" + files[0].Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +140,7 @@ func TestDropTableMigrations(t *testing.T) {
 
 	// Check that the up migration file has the expected content.
 	exp = testDropTableSQL
-	act, err := fileAsString(migrationsDir + "/" + files[0].Name())
+	act, err := sql.FileAsString(migrationsDir + "/" + files[0].Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +186,7 @@ func TestRenameTableMigrations(t *testing.T) {
 
 	// Check that the up migration file has the expected content.
 	exp = testRenameTableUpSQL
-	act, err := fileAsString(migrationsDir + "/" + files[1].Name())
+	act, err := sql.FileAsString(migrationsDir + "/" + files[1].Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,7 +204,7 @@ func TestRenameTableMigrations(t *testing.T) {
 
 	// Check that the down migration file has the expected content.
 	exp = testRenameTableDownSQL
-	act, err = fileAsString(migrationsDir + "/" + files[0].Name())
+	act, err = sql.FileAsString(migrationsDir + "/" + files[0].Name())
 	if err != nil {
 		t.Fatal(err)
 	}

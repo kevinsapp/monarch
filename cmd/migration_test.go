@@ -39,7 +39,7 @@ func TestCreateMigration(t *testing.T) {
 
 	// Check that the migration file contains the expected content.
 	exp = testCreateTableSQL
-	act, err = fileAsString(fn)
+	act, err = sql.FileAsString(fn)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +88,7 @@ func TestTemplateAsSQL(t *testing.T) {
 	td.Name = "users"
 
 	// Run templateAsSQL()
-	act, err := templateAsSQL(td, sql.CreateTableTmpl)
+	act, err := sql.ProcessTmpl(td, sql.CreateTableTmpl)
 	if err != nil {
 		t.Fatal(err)
 	}
