@@ -12,7 +12,7 @@ import (
 // Unit test createTableMigrations()
 func TestCreateTableMigrations(t *testing.T) {
 	// Create a migrations directory.
-	var cmd = &cobra.Command{}
+	cmd := &cobra.Command{}
 	args := make([]string, 0)
 	mkdirMigrations(cmd, args)
 	defer os.RemoveAll("migrations") // Do cleanup
@@ -51,7 +51,7 @@ func TestCreateTableMigrations(t *testing.T) {
 // Unit test dropTableMigrations()
 func TestDropTableMigrations(t *testing.T) {
 	// Create a migrations directory.
-	var cmd = &cobra.Command{}
+	cmd := &cobra.Command{}
 	args := make([]string, 0)
 	mkdirMigrations(cmd, args)
 	defer os.RemoveAll("migrations") // Do cleanup
@@ -84,7 +84,7 @@ func TestDropTableMigrations(t *testing.T) {
 // Unit test createTableMigrations()
 func TestRenameTableMigrations(t *testing.T) {
 	// Create a migrations directory.
-	var cmd = &cobra.Command{}
+	cmd := &cobra.Command{}
 	args := make([]string, 0)
 	mkdirMigrations(cmd, args)
 	defer os.RemoveAll("migrations") // Do cleanup
