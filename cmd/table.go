@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/iancoleman/strcase"
+	"github.com/kevinsapp/monarch/pkg/sql"
 	"github.com/spf13/cobra"
 )
 
@@ -67,14 +68,14 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name)
-	_, err := createMigration(fn, sqltCreateTable, td)
+	_, err := createMigration(fn, sql.CreateTableTmpl, td)
 	if err != nil {
 		return err
 	}
 
 	// Create a "down" migration file.
 	fn = fmt.Sprintf("migrations/%d_create_table_%s_down.sql", timestamp, td.Name)
-	_, err = createMigration(fn, sqltDropTable, td)
+	_, err = createMigration(fn, sql.DropTableTmpl, td)
 	if err != nil {
 		return err
 	}
@@ -96,7 +97,7 @@ func dropTableMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_drop_table_%s_up.sql", timestamp, td.Name)
-	_, err := createMigration(fn, sqltDropTable, td)
+	_, err := createMigration(fn, sql.DropTableTmpl, td)
 	if err != nil {
 		return err
 	}
@@ -124,7 +125,7 @@ func renameTableMigrations(cmd *cobra.Command, args []string) error {
 	td.Name = name       // current name of table
 	td.NewName = newName // new name of table
 	fn := fmt.Sprintf("migrations/%d_rename_table_%s_up.sql", timestamp, name)
-	_, err := createMigration(fn, sqltRenameTable, td)
+	_, err := createMigration(fn, sql.RenameTableTmpl, td)
 	if err != nil {
 		return err
 	}
@@ -133,7 +134,7 @@ func renameTableMigrations(cmd *cobra.Command, args []string) error {
 	td.Name = newName // current name of table after "up" migration
 	td.NewName = name // old name of table
 	fn = fmt.Sprintf("migrations/%d_rename_table_%s_down.sql", timestamp, name)
-	_, err = createMigration(fn, sqltRenameTable, td)
+	_, err = createMigration(fn, sql.RenameTableTmpl, td)
 	if err != nil {
 		return err
 	}

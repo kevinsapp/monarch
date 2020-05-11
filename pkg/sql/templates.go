@@ -1,9 +1,9 @@
-package cmd
+package sql
 
 // SQL templates for TABLE operaions
 const (
 	// sqltCreateTable is a SQL template for creating tables.
-	sqltCreateTable string = `-- Table: {{.Name}}
+	CreateTableTmpl string = `-- Table: {{.Name}}
 
 CREATE TABLE {{.Name}} (
 	id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -18,13 +18,13 @@ CREATE TABLE {{.Name}} (
 );
 `
 	// sqltDropTable is a SQL template for dropping tables.
-	sqltDropTable string = `-- Table: {{.Name}}
+	DropTableTmpl string = `-- Table: {{.Name}}
 
 DROP TABLE {{.Name}};
 `
 
 	// sqltRenameTable is a SQL template for renaming tables.
-	sqltRenameTable string = `-- Table: {{.Name}}
+	RenameTableTmpl string = `-- Table: {{.Name}}
 
 ALTER TABLE {{.Name}} RENAME TO {{.NewName}};
 `

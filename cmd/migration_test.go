@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kevinsapp/monarch/pkg/sql"
 	"github.com/spf13/cobra"
 )
 
@@ -55,7 +56,7 @@ func TestCreateMigration(t *testing.T) {
 
 	// Create a migration file.
 	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name)
-	f, err := createMigration(fn, sqltCreateTable, td)
+	f, err := createMigration(fn, sql.CreateTableTmpl, td)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +119,7 @@ func TestTemplateAsSQL(t *testing.T) {
 	td.Name = "users"
 
 	// Run templateAsSQL()
-	act, err := templateAsSQL(td, sqltCreateTable)
+	act, err := templateAsSQL(td, sql.CreateTableTmpl)
 	if err != nil {
 		t.Fatal(err)
 	}
