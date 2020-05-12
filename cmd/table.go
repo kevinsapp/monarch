@@ -10,12 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// table ...
-type table struct {
-	Name    string
-	NewName string
-}
-
 func init() {
 	createCmd.AddCommand(createTableCmd)
 	dropCmd.AddCommand(dropTableCmd)
@@ -63,7 +57,7 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
-	td := table{}
+	td := sql.Table{}
 	td.Name = strcase.ToSnake(args[0])
 
 	// Create an "up" migration file.
@@ -92,7 +86,7 @@ func dropTableMigrations(cmd *cobra.Command, args []string) error {
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
-	td := table{}
+	td := sql.Table{}
 	td.Name = strcase.ToSnake(args[0])
 
 	// Create an "up" migration file.
@@ -119,7 +113,7 @@ func renameTableMigrations(cmd *cobra.Command, args []string) error {
 	timestamp := time.Now().UnixNano()
 	name := strcase.ToSnake(args[0])
 	newName := strcase.ToSnake(args[1])
-	td := table{}
+	td := sql.Table{}
 
 	// Create an "up" migration file.
 	td.Name = name       // current name of table

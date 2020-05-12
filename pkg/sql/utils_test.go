@@ -35,13 +35,13 @@ ALTER TABLE users RENAME TO people;
 // Unit test templateAsSQL
 func TestProcessTmpl(t *testing.T) {
 	cases := []struct {
-		Table table
+		Table Table
 		Tmpl  string
 		SQL   string
 	}{
-		{table{"users", ""}, CreateTableTmpl, testCreateTableSQL},       // Create table
-		{table{"users", ""}, DropTableTmpl, testDropTableSQL},           // Drop table
-		{table{"users", "people"}, RenameTableTmpl, testRenameTableSQL}, // Rename table
+		{Table{"users", "", []Column{}}, CreateTableTmpl, testCreateTableSQL},       // Create table
+		{Table{"users", "", []Column{}}, DropTableTmpl, testDropTableSQL},           // Drop table
+		{Table{"users", "people", []Column{}}, RenameTableTmpl, testRenameTableSQL}, // Rename table
 	}
 
 	for _, c := range cases {

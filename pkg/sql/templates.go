@@ -1,9 +1,17 @@
 package sql
 
-// table ...
-type table struct {
+// Table ...
+type Table struct {
 	Name    string
 	NewName string
+	Columns []Column
+}
+
+// Column ...
+type Column struct {
+	Name    string
+	NewName string
+	Type    string
 }
 
 // SQL templates for TABLE operaions
@@ -33,5 +41,18 @@ DROP TABLE {{.Name}};
 	RenameTableTmpl string = `-- Table: {{.Name}}
 
 ALTER TABLE {{.Name}} RENAME TO {{.NewName}};
+`
+
+	// AddColumnTmpl is a SQL template for adding columns to a table.
+	AddColumnTmpl string = `-- Table: {{.Name}}
+
+ALTER TABLE {{.Name}}{{range .Columns}}
+ADD COLUMN {{.Name}} {{.Type}}{{end}};
+`
+	// DropColumnTmpl is a SQL template for dropping columns from a table.
+	DropColumnTmpl string = `-- Table: {{.Name}}
+
+ALTER TABLE {{.Name}}{{range .Columns}}
+DROP COLUMN {{.Name}}{{end}};
 `
 )
