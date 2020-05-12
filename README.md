@@ -18,6 +18,8 @@ Add column to table
 monarch generate migration add column [colname] --table [tablename]
 monarch generate migration add --column [colname] --table [tablename]
 
+ALTER TABLE products ADD COLUMN description text;
+
 
 SQL
 
