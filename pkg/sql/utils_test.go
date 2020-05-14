@@ -45,6 +45,7 @@ DROP COLUMN given_name;
 
 // Unit test templateAsSQL
 func TestProcessTmpl(t *testing.T) {
+	// Test cases
 	cases := []struct {
 		Table Table
 		Tmpl  string
@@ -78,6 +79,7 @@ func TestProcessTmpl(t *testing.T) {
 		},
 	}
 
+	// Run each test case.
 	for _, c := range cases {
 		td := c.Table
 		tmpl := c.Tmpl
