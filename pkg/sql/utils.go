@@ -3,7 +3,6 @@ package sql
 import (
 	"bytes"
 	"io/ioutil"
-	"os"
 	"text/template"
 )
 
@@ -33,15 +32,8 @@ func ProcessTmpl(data interface{}, sqlt string) (string, error) {
 
 // FileAsString reads in the contents of a SQL file and returns a string.
 func FileAsString(fn string) (string, error) {
-	// Open file with name fn
-	f, err := os.Open(fn)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close() // Do cleanup
-
 	// Read file contents to buffer
-	b, err := ioutil.ReadAll(f)
+	b, err := ioutil.ReadFile(fn)
 	if err != nil {
 		return "", err
 	}
