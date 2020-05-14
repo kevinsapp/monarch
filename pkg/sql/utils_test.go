@@ -36,6 +36,11 @@ ALTER TABLE users
 ADD COLUMN given_name VARCHAR
 ADD COLUMN family_name VARCHAR;
 `
+	testDropColumnSQL string = `-- Table: users
+
+ALTER TABLE users
+DROP COLUMN given_name;
+`
 )
 
 // Unit test templateAsSQL
@@ -59,6 +64,17 @@ func TestProcessTmpl(t *testing.T) {
 			},
 			AddColumnTmpl,
 			testAddColumnSQL,
+		},
+		{ // Drop column from table
+			Table{
+				"users",
+				"",
+				[]Column{
+					{"given_name", "", ""},
+				},
+			},
+			DropColumnTmpl,
+			testDropColumnSQL,
 		},
 	}
 
