@@ -105,7 +105,7 @@ func TestProcessTmpl(t *testing.T) {
 		exp := c.SQL
 
 		// Run ProcessTmpl()
-		act, err := ProcessTmpl(td, tmpl)
+		act, err := ProcessTmpl(&td, tmpl)
 		if err != nil {
 			t.Fatal(err)
 		}

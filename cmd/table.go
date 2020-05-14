@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/iancoleman/strcase"
 	"github.com/kevinsapp/monarch/pkg/sql"
 	"github.com/spf13/cobra"
 )
@@ -58,18 +57,18 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
 	td := sql.Table{}
-	td.Name = strcase.ToSnake(args[0])
+	td.SetName(args[0])
 
 	// Create an "up" migration file.
-	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name)
-	_, err := createMigration(fn, sql.CreateTableTmpl, td)
+	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name())
+	_, err := createMigration(fn, sql.CreateTableTmpl, &td)
 	if err != nil {
 		return err
 	}
 
 	// Create a "down" migration file.
-	fn = fmt.Sprintf("migrations/%d_create_table_%s_down.sql", timestamp, td.Name)
-	_, err = createMigration(fn, sql.DropTableTmpl, td)
+	fn = fmt.Sprintf("migrations/%d_create_table_%s_down.sql", timestamp, td.Name())
+	_, err = createMigration(fn, sql.DropTableTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -87,11 +86,11 @@ func dropTableMigrations(cmd *cobra.Command, args []string) error {
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
 	td := sql.Table{}
-	td.Name = strcase.ToSnake(args[0])
+	td.SetName(args[0])
 
 	// Create an "up" migration file.
-	fn := fmt.Sprintf("migrations/%d_drop_table_%s_up.sql", timestamp, td.Name)
-	_, err := createMigration(fn, sql.DropTableTmpl, td)
+	fn := fmt.Sprintf("migrations/%d_drop_table_%s_up.sql", timestamp, td.Name())
+	_, err := createMigration(fn, sql.DropTableTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -111,24 +110,22 @@ func renameTableMigrations(cmd *cobra.Command, args []string) error {
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
-	name := strcase.ToSnake(args[0])
-	newName := strcase.ToSnake(args[1])
 	td := sql.Table{}
+	td.SetName(args[0])
+	td.SetNewName(args[1])
 
 	// Create an "up" migration file.
-	td.Name = name       // current name of table
-	td.NewName = newName // new name of table
-	fn := fmt.Sprintf("migrations/%d_rename_table_%s_up.sql", timestamp, name)
-	_, err := createMigration(fn, sql.RenameTableTmpl, td)
+	fn := fmt.Sprintf("migrations/%d_rename_table_%s_up.sql", timestamp, td.Name())
+	_, err := createMigration(fn, sql.RenameTableTmpl, &td)
 	if err != nil {
 		return err
 	}
 
 	// Create a "down" migration file.
-	td.Name = newName // current name of table after "up" migration
-	td.NewName = name // old name of table
-	fn = fmt.Sprintf("migrations/%d_rename_table_%s_down.sql", timestamp, name)
-	_, err = createMigration(fn, sql.RenameTableTmpl, td)
+	fn = fmt.Sprintf("migrations/%d_rename_table_%s_down.sql", timestamp, td.Name())
+	td.SetName(args[1])    // swap name and newname
+	td.SetNewName(args[0]) // swap name and newname
+	_, err = createMigration(fn, sql.RenameTableTmpl, &td)
 	if err != nil {
 		return err
 	}
