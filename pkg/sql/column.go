@@ -1,8 +1,6 @@
 package sql
 
 import (
-	"strings"
-
 	"github.com/iancoleman/strcase"
 )
 
@@ -40,6 +38,7 @@ func (c *Column) Type() string {
 
 // SetType ...
 func (c *Column) SetType(name string) {
-	c.colType = strcase.ToSnake(name)
-	c.colType = strings.ToUpper(c.colType)
+	// TODO: It appears that the interval data type includes some options which are upcased.
+	// c.colType = strings.ToLower(name)
+	c.colType = name
 }

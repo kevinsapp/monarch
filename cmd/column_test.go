@@ -15,8 +15,8 @@ const (
 	testAddColumnsSQL string = `-- Table: users
 
 ALTER TABLE users
-ADD COLUMN given_name VARCHAR
-ADD COLUMN family_name VARCHAR;
+ADD COLUMN given_name varchar
+ADD COLUMN family_name varchar;
 `
 
 	testDropColumnsSQL string = `-- Table: users

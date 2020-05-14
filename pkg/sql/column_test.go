@@ -79,3 +79,127 @@ func TestColumnSetNewName(t *testing.T) {
 		}
 	}
 }
+
+// Unit test Column.NewName()
+func TestColumnType(t *testing.T) {
+	cases := []string{
+		// Numeric types
+		"smallint",
+		"integer",
+		"bigint",
+		"decimal",
+		"numeric",
+		"real",
+		"double precision",
+		"smallserial",
+		"serial",
+		"bigserial",
+		// Monetary types
+		"money",
+		// Character types
+		"character varying",
+		"varchar",
+		"character varying(250)",
+		"varchar(100)",
+		"text",
+		// Binary data types
+		"bytea",
+		// Date/time types
+		"timestamp(6) without time zone",
+		"timestamp(0) with time zone",
+		"date",
+		"time(6) without time zone",
+		"time(0) with time zone",
+		"interval YEAR",
+		"interval MINUTE TO SECOND(6)",
+		// Boolean type
+		"boolean",
+		// Geometric types
+		"point",
+		"line",
+		"lseg",
+		"box",
+		"path",
+		"polygon",
+		"circle",
+		// Network address types
+		"cidr",
+		"inet",
+		"macaddr",
+		"macaddr8",
+		// UUID type
+		"uuid",
+	}
+	for _, v := range cases {
+		col := Column{}
+		col.colType = v
+
+		exp := v
+		act := col.Type() // Run Column.Type()
+		if exp != act {
+			t.Errorf("want %q; got %q", exp, act)
+		}
+	}
+}
+
+// Unit test Column.SetType()
+func TestColumnSetType(t *testing.T) {
+	cases := []string{
+		// Numeric types
+		"smallint",
+		"integer",
+		"bigint",
+		"decimal",
+		"numeric",
+		"real",
+		"double precision",
+		"smallserial",
+		"serial",
+		"bigserial",
+		// Monetary types
+		"money",
+		// Character types
+		"character varying",
+		"varchar",
+		"character varying(250)",
+		"varchar(100)",
+		"text",
+		// Binary data types
+		"bytea",
+		// Date/time types
+		"timestamp(6) without time zone",
+		"timestamp(0) with time zone",
+		"date",
+		"time(6) without time zone",
+		"time(0) with time zone",
+		"interval YEAR",
+		"interval MINUTE TO SECOND(6)",
+		// Boolean type
+		"boolean",
+		// Geometric types
+		"point",
+		"line",
+		"lseg",
+		"box",
+		"path",
+		"polygon",
+		"circle",
+		// Network address types
+		"cidr",
+		"inet",
+		"macaddr",
+		"macaddr8",
+		// UUID type
+		"uuid",
+	}
+	for _, v := range cases {
+		col := Column{}
+		col.SetType(v) // Run Column.SetType()
+
+		exp := v
+		act := col.colType
+		if exp != act {
+			t.Errorf("want %q; got %q", exp, act)
+		}
+	}
+}
