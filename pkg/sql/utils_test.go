@@ -41,6 +41,13 @@ ADD COLUMN family_name VARCHAR;
 ALTER TABLE users
 DROP COLUMN given_name;
 `
+
+	testRenameColumnSQL string = `-- Table: users
+
+ALTER TABLE users
+RENAME COLUMN given_name TO first_name
+RENAME COLUMN family_name TO last_name;
+`
 )
 
 // Unit test templateAsSQL
@@ -76,6 +83,18 @@ func TestProcessTmpl(t *testing.T) {
 			},
 			DropColumnTmpl,
 			testDropColumnSQL,
+		},
+		{ // Rename column in table
+			Table{
+				"users",
+				"",
+				[]Column{
+					{"given_name", "first_name", ""},
+					{"family_name", "last_name", ""},
+				},
+			},
+			RenameColumnTmpl,
+			testRenameColumnSQL,
 		},
 	}
 

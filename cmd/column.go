@@ -14,6 +14,7 @@ import (
 func init() {
 	addCmd.AddCommand(addColumnCmd)
 	dropCmd.AddCommand(dropColumnCmd)
+	renameCmd.AddCommand(renameColumnCmd)
 }
 
 // addColumnCmd generates an "up" migration file to add a column to
@@ -33,6 +34,17 @@ var dropColumnCmd = &cobra.Command{
 	Short: "Generate migration files to drop a column named [colName].",
 	Long:  `Generate an "up" migration file to drop a column named [colName].`,
 	RunE:  dropColumnMigrations,
+}
+
+// renameColumnMigrations generates an "up" migration file to rename a column from
+// [name] to [newname] and a companion "down" migration file to rename the column
+// from [newname] to [name].
+var renameColumnCmd = &cobra.Command{
+	Use:   "column [tableName] [ [name:newName] ... ]",
+	Short: "Generate migration files to rename a column from [name] to [newName].",
+	Long: `Generate an "up" migration file to rename a column from [name] to [newName]
+and a companion "down" migration file to rename the column from [newName] to [name].`,
+	RunE: renameColumnMigrations,
 }
 
 // addColumnMigrations creates an "up" migration file to add a column to
@@ -101,6 +113,60 @@ func dropColumnMigrations(cmd *cobra.Command, args []string) error {
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_drop_columns_from_%s_up.sql", timestamp, td.Name)
 	_, err := createMigration(fn, sql.DropColumnTmpl, td)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+// renameColumnMigrations creates an "up" migration file to rename a column from
+// [name] to [newName] a "down" migration file to rename that column from [newName]
+// to [name].
+func renameColumnMigrations(cmd *cobra.Command, args []string) error {
+	// Caller should supply a table name as the first argument.
+	if len(args) < 2 {
+		return errors.New("requires tableName and colName:newName arguments")
+	}
+
+	// Set timestamp and table data.
+	timestamp := time.Now().UnixNano()
+	td := sql.Table{}
+	td.Name = args[0]
+
+	// Add columns to table object
+	for _, v := range args[1:] {
+		names := strings.Split(v, ":")
+
+		col := sql.Column{}
+		col.Name = strcase.ToSnake(names[0])
+		col.NewName = strcase.ToSnake(names[1])
+
+		td.Columns = append(td.Columns, col)
+	}
+
+	// Create an "up" migration file.
+	fn := fmt.Sprintf("migrations/%d_rename_columns_in_%s_up.sql", timestamp, td.Name)
+	_, err := createMigration(fn, sql.RenameColumnTmpl, td)
+	if err != nil {
+		return err
+	}
+
+	// Add columns to table object
+	td.Columns = []sql.Column{}
+	for _, v := range args[1:] {
+		names := strings.Split(v, ":")
+
+		col := sql.Column{}
+		col.Name = strcase.ToSnake(names[1])
+		col.NewName = strcase.ToSnake(names[0])
+
+		td.Columns = append(td.Columns, col)
+	}
+
+	// Create a "down" migration file.
+	fn = fmt.Sprintf("migrations/%d_rename_columns_in_%s_down.sql", timestamp, td.Name)
+	_, err = createMigration(fn, sql.RenameColumnTmpl, td)
 	if err != nil {
 		return err
 	}

@@ -55,4 +55,11 @@ ADD COLUMN {{.Name}} {{.Type}}{{end}};
 ALTER TABLE {{.Name}}{{range .Columns}}
 DROP COLUMN {{.Name}}{{end}};
 `
+
+	// RenameColumnTmpl is a SQL template for renaming columns in a table.
+	RenameColumnTmpl string = `-- Table: {{.Name}}
+
+ALTER TABLE {{.Name}}{{range .Columns}}
+RENAME COLUMN {{.Name}} TO {{.NewName}}{{end}};
+`
 )
