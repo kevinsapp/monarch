@@ -1,6 +1,14 @@
 # Monarch
 Monarch is a command line tool for migrating SQL databases.
 
+## TODO
+
+(Rename a column)
+(Change a column's data type)
+(Change column's default value)
+(Add a constraint)
+(Remove a constraint)
+
 ## Usage
 Create a table
 `monarch generate migration create table [name]`
@@ -11,19 +19,10 @@ Drop a table
 Rename a table
 `monarch generate migration rename table [name] [newname]`
 
-Add column to table
-`monarch generate migration add column [colname:coltype] [...] --table [tablename]`
+Add columns to a table
+`monarch generate migration add column [ [colname:coltype] ... ] --table [tablename]`
 `monarch generate migration add column givenName:varchar familyName:varchar --table users`
 
-## SQL
-
-CREATE TABLE
-DROP TABLE
-(Rename a table)
-(Add a column)
-(Drop a column)
-(Add a constraint)
-(Remove a constraint)
-(Change a column's data type)
-(Raname a column)
-(Change column's default value)
+Drop columns from a table
+`monarch generate migration drop column [ [colname] ... ] --table [tablename]`
+`monarch generate migration drop column givenName familyName --table users`
