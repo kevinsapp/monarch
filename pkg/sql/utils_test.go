@@ -30,6 +30,12 @@ DROP TABLE users;
 
 ALTER TABLE users RENAME TO people;
 `
+	testAddColumnSQL string = `-- Table: users
+
+ALTER TABLE users
+ADD COLUMN given_name VARCHAR
+ADD COLUMN family_name VARCHAR;
+`
 )
 
 // Unit test templateAsSQL
@@ -42,6 +48,18 @@ func TestProcessTmpl(t *testing.T) {
 		{Table{"users", "", []Column{}}, CreateTableTmpl, testCreateTableSQL},       // Create table
 		{Table{"users", "", []Column{}}, DropTableTmpl, testDropTableSQL},           // Drop table
 		{Table{"users", "people", []Column{}}, RenameTableTmpl, testRenameTableSQL}, // Rename table
+		{ // Add column to table
+			Table{
+				"users",
+				"",
+				[]Column{
+					{"given_name", "", "VARCHAR"},
+					{"family_name", "", "VARCHAR"},
+				},
+			},
+			AddColumnTmpl,
+			testAddColumnSQL,
+		},
 	}
 
 	for _, c := range cases {
@@ -57,7 +75,7 @@ func TestProcessTmpl(t *testing.T) {
 
 		// Check that processed SQL matches the expected SQL.
 		if exp != act {
-			t.Errorf("want %s; got %s", exp, act)
+			t.Errorf("\nwant %s\ngot %s", exp, act)
 		}
 	}
 }
