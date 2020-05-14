@@ -13,15 +13,15 @@ import (
 
 func init() {
 	addCmd.AddCommand(addColumnCmd)
-	addColumnCmd.Flags().String("table", "TABLE_NAME", "table to add column to")
+	dropCmd.AddCommand(dropColumnCmd)
 }
 
 // addColumnCmd generates an "up" migration file to add a column to
 // a table and a "down" migration file to remove that column.
 var addColumnCmd = &cobra.Command{
-	Use:   "column [ [name:type] ... ]",
-	Short: "Generate migration files to add a column named [name] with type [type].",
-	Long: `Generate an "up" migration file to add a column named [name] with type
+	Use:   "column [tableName] [ [colName:type] ... ]",
+	Short: "Generate migration files to add a column named [colName] with type [type].",
+	Long: `Generate an "up" migration file to add a column named [colName] with type
 [type] and a companion "down" migration file to remove that column.`,
 	RunE: addColumnMigrations,
 }
@@ -30,26 +30,26 @@ var addColumnCmd = &cobra.Command{
 // from a table.
 var dropColumnCmd = &cobra.Command{
 	Use:   "column [ [name] ... ]",
-	Short: "Generate migration files to add a column named [name].",
-	Long:  `Generate an "up" migration file to add a column named [name].`,
-	RunE:  addColumnMigrations,
+	Short: "Generate migration files to drop a column named [colName].",
+	Long:  `Generate an "up" migration file to drop a column named [colName].`,
+	RunE:  dropColumnMigrations,
 }
 
 // addColumnMigrations creates an "up" migration file to add a column to
 // a table and a "down" migration file to remove that column.
 func addColumnMigrations(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument.
-	if len(args) < 1 {
-		return errors.New("requires a name:type argument")
+	if len(args) < 2 {
+		return errors.New("requires tableName and colName:type arguments")
 	}
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
 	td := sql.Table{}
-	td.Name, _ = cmd.Flags().GetString("table")
+	td.Name = args[0]
 
 	// Add columns to table object
-	for _, v := range args {
+	for _, v := range args[1:] {
 		nameType := strings.Split(v, ":")
 
 		col := sql.Column{}
@@ -81,17 +81,17 @@ func addColumnMigrations(cmd *cobra.Command, args []string) error {
 // from a table.
 func dropColumnMigrations(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument.
-	if len(args) < 1 {
-		return errors.New("requires a name argument")
+	if len(args) < 2 {
+		return errors.New("requires tableName and colName arguments")
 	}
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
 	td := sql.Table{}
-	td.Name, _ = cmd.Flags().GetString("table")
+	td.Name = args[0]
 
 	// Drop columns from table object
-	for _, v := range args {
+	for _, v := range args[1:] {
 		col := sql.Column{}
 		col.Name = strcase.ToSnake(v)
 

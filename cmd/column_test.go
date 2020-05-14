@@ -36,11 +36,10 @@ func TestAddColumnMigrations(t *testing.T) {
 	defer os.RemoveAll(migrationsDir) // Do cleanup
 
 	// Run addColumnMigrations()
-	args = append(args, "givenName:varchar")                 // first argument
-	args = append(args, "familyName:varchar")                // second argument
-	_ = cmd.Flags().String("table", "table_name", "testing") // add table flag
-	_ = cmd.Flags().Set("table", "users")                    // set table flag
-	err := addColumnMigrations(cmd, args)                    // run command
+	args = append(args, "users")              // table name
+	args = append(args, "givenName:varchar")  // first column argument
+	args = append(args, "familyName:varchar") // second column argument
+	err := addColumnMigrations(cmd, args)     // run command
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,11 +101,10 @@ func TestDropColumnMigrations(t *testing.T) {
 	defer os.RemoveAll(migrationsDir) // Do cleanup
 
 	// Run dropColumnMigrations()
-	args = append(args, "givenName")                         // first argument
-	args = append(args, "familyName")                        // second argument
-	_ = cmd.Flags().String("table", "table_name", "testing") // add table flag
-	_ = cmd.Flags().Set("table", "users")                    // set table flag
-	err := dropColumnMigrations(cmd, args)                   // run command
+	args = append(args, "users")           // table name
+	args = append(args, "givenName")       // first column argument
+	args = append(args, "familyName")      // second column argument
+	err := dropColumnMigrations(cmd, args) // run command
 	if err != nil {
 		t.Fatal(err)
 	}
