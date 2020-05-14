@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iancoleman/strcase"
 	"github.com/kevinsapp/monarch/pkg/sql"
 	"github.com/spf13/cobra"
 )
@@ -65,9 +64,8 @@ func addColumnMigrations(cmd *cobra.Command, args []string) error {
 		nameType := strings.Split(v, ":")
 
 		col := sql.Column{}
-		col.Name = strcase.ToSnake(nameType[0])
-		col.Type = strcase.ToSnake(nameType[1]) // TODO: we we need snake_case for this string?
-		col.Type = strings.ToUpper(col.Type)
+		col.SetName(nameType[0])
+		col.SetType(nameType[1])
 
 		td.AddColumn(col)
 	}
@@ -105,7 +103,7 @@ func dropColumnMigrations(cmd *cobra.Command, args []string) error {
 	// Drop columns from table object
 	for _, v := range args[1:] {
 		col := sql.Column{}
-		col.Name = strcase.ToSnake(v)
+		col.SetName(v)
 
 		td.AddColumn(col)
 	}
@@ -139,8 +137,8 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 		names := strings.Split(v, ":")
 
 		col := sql.Column{}
-		col.Name = strcase.ToSnake(names[0])
-		col.NewName = strcase.ToSnake(names[1])
+		col.SetName(names[0])
+		col.SetNewName(names[1])
 
 		td.AddColumn(col)
 	}
@@ -158,8 +156,8 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 		names := strings.Split(v, ":")
 
 		col := sql.Column{}
-		col.Name = strcase.ToSnake(names[1])
-		col.NewName = strcase.ToSnake(names[0])
+		col.SetName(names[1])
+		col.SetNewName(names[0])
 
 		td.AddColumn(col)
 	}
