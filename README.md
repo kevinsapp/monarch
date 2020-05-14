@@ -20,9 +20,13 @@ Rename a table
 `monarch generate migration rename table [name] [newname]`
 
 Add columns to a table
-`monarch generate migration add column [ [colname:coltype] ... ] --table [tablename]`
-`monarch generate migration add column givenName:varchar familyName:varchar --table users`
+`monarch generate migration add column [tableName] [ [colName:type] ... ]`
+`monarch generate migration add column users givenName:varchar familyName:varchar`
 
 Drop columns from a table
-`monarch generate migration drop column [ [colname] ... ] --table [tablename]`
-`monarch generate migration drop column givenName familyName --table users`
+`monarch generate migration drop column [tableName] [ [colName] ... ]`
+`monarch generate migration drop column users givenName familyName`
+
+Rename columns in a table
+`monarch generate migration rename column [tableName] [ [colName:newName] ... ]`
+`monarch generate migration rename column users givenName:firstName familyName:lastName`
