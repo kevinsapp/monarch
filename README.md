@@ -30,3 +30,7 @@ Drop columns from a table
 Rename columns in a table
 `monarch generate migration rename column [tableName] [ [colName:newName] ... ]`
 `monarch generate migration rename column users givenName:firstName familyName:lastName`
+
+## TODO
+
+Change column's data type
