@@ -3,11 +3,11 @@ Monarch is a command line tool for migrating SQL databases.
 
 ## TODO
 
-(Rename a column)
-(Change a column's data type)
-(Change column's default value)
-(Add a constraint)
-(Remove a constraint)
+* Add a foreign key constraint
+* Add a constraint (general)
+* Remove a constraint
+* Change a column's data type
+* Change column's default value
 
 ## Usage
 Create a table
@@ -30,7 +30,3 @@ Drop columns from a table
 Rename columns in a table
 `monarch generate migration rename column [tableName] [ [colName:newName] ... ]`
 `monarch generate migration rename column users givenName:firstName familyName:lastName`
-
-## TODO
-
-Change column's data type
