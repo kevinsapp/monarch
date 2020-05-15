@@ -13,6 +13,9 @@ Monarch is a command line tool for migrating SQL databases.
 Create a table
 `monarch generate migration create table [name]`
 
+Create a table with columns
+`monarch generate migration create table [name] [ [colName:type] ... ]`
+
 Drop a table
 `monarch generate migration drop table [name]`
 

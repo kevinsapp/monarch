@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/kevinsapp/monarch/pkg/sql"
@@ -58,6 +59,20 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 	timestamp := time.Now().UnixNano()
 	td := sql.Table{}
 	td.SetName(args[0])
+
+	// If column args are present, parse args and add columns to table.
+	if len(args) > 1 {
+		// Add columns to table object
+		for _, v := range args[1:] {
+			nameType := strings.Split(v, ":")
+
+			col := sql.Column{}
+			col.SetName(nameType[0])
+			col.SetType(nameType[1])
+
+			td.AddColumn(col)
+		}
+	}
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name())

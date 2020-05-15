@@ -7,6 +7,8 @@ const (
 
 CREATE TABLE {{.Name}} (
 	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	{{range .Columns}}{{.Name}} {{.Type}},
+	{{end}}
 
 	-- Specify additional fields here.
 
