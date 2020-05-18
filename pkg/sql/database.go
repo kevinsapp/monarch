@@ -36,5 +36,5 @@ func (t *Database) Owner() string {
 
 // SetOwner ...
 func (t *Database) SetOwner(owner string) {
-	t.owner = strcase.ToSnake(owner)
+	t.owner = owner
 }
