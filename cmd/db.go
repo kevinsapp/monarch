@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -15,7 +14,7 @@ import (
 )
 
 // Global ...
-var db *sql.DB
+var db *sqlt.DB
 var dsn string
 
 func init() {
@@ -54,7 +53,7 @@ var dropDBCmd = &cobra.Command{
 // openDB ...
 func openDB(cmd *cobra.Command, args []string) {
 	var err error
-	db, err = sql.Open("postgres", dsn)
+	db, err = sqlt.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("ERROR: %v\n", err)
 	}
@@ -85,7 +84,7 @@ func createDB(cmd *cobra.Command, args []string) error {
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=%s", host, port, user, pw, ssl)
 
 	// Open a DB connection pool
-	db, err := sql.Open("postgres", dsn)
+	db, err := sqlt.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
@@ -128,7 +127,7 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=%s", host, port, user, pw, ssl)
 
 	// Open a DB connection pool
-	db, err := sql.Open("postgres", dsn)
+	db, err := sqlt.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("ERROR: dropDB: %s\n", err)
 	}

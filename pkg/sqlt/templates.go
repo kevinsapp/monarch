@@ -1,4 +1,4 @@
-package sql
+package sqlt
 
 // SQL templates for DATABASE operaions
 const (

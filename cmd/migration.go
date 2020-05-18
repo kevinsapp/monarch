@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kevinsapp/monarch/pkg/sql"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +30,7 @@ func createMigration(fname, sqlt string, data interface{}) (*os.File, error) {
 	defer f.Close()
 
 	// Process SQL template
-	sql, err := sql.ProcessTmpl(data, sqlt)
+	sql, err := sqlt.ProcessTmpl(data, sqlt)
 	if err != nil {
 		return f, err
 	}

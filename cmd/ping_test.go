@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"database/sql"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -27,7 +26,7 @@ func TestDBPing(t *testing.T) {
 
 	// Open DB with invalid password in DSN.
 	dsn := "host=localhost port=5432 user=postgres password=wrongpw dbname=monarch_development sslmode=disable"
-	db, _ = sql.Open("postgres", dsn)
+	db, _ = sqlt.Open("postgres", dsn)
 
 	// Run ping() and verify that the correct error is returned.
 	err = ping(cmd, args)

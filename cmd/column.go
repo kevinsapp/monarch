@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kevinsapp/monarch/pkg/sql"
+	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 )
 
@@ -56,14 +56,14 @@ func addColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
-	td := sql.Table{}
+	td := sqlt.Table{}
 	td.SetName(args[0])
 
 	// Add columns to table object
 	for _, v := range args[1:] {
 		nameType := strings.Split(v, ":")
 
-		col := sql.Column{}
+		col := sqlt.Column{}
 		col.SetName(nameType[0])
 		col.SetType(nameType[1])
 
@@ -72,14 +72,14 @@ func addColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_add_columns_to_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sql.AddColumnTmpl, &td)
+	_, err := createMigration(fn, sqlt.AddColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
 
 	// Create a "down" migration file.
 	fn = fmt.Sprintf("migrations/%d_add_columns_to_%s_down.sql", timestamp, td.Name())
-	_, err = createMigration(fn, sql.DropColumnTmpl, &td)
+	_, err = createMigration(fn, sqlt.DropColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -97,12 +97,12 @@ func dropColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
-	td := sql.Table{}
+	td := sqlt.Table{}
 	td.SetName(args[0])
 
 	// Drop columns from table object
 	for _, v := range args[1:] {
-		col := sql.Column{}
+		col := sqlt.Column{}
 		col.SetName(v)
 
 		td.AddColumn(col)
@@ -110,7 +110,7 @@ func dropColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_drop_columns_from_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sql.DropColumnTmpl, &td)
+	_, err := createMigration(fn, sqlt.DropColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -129,14 +129,14 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Set timestamp and table data.
 	timestamp := time.Now().UnixNano()
-	td := sql.Table{}
+	td := sqlt.Table{}
 	td.SetName(args[0])
 
 	// Add columns to table object
 	for _, v := range args[1:] {
 		names := strings.Split(v, ":")
 
-		col := sql.Column{}
+		col := sqlt.Column{}
 		col.SetName(names[0])
 		col.SetNewName(names[1])
 
@@ -145,17 +145,17 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_rename_columns_in_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sql.RenameColumnTmpl, &td)
+	_, err := createMigration(fn, sqlt.RenameColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
 
 	// Add columns to table object
-	td.SetColumns([]sql.Column{}) // Reinitalize columns
+	td.SetColumns([]sqlt.Column{}) // Reinitalize columns
 	for _, v := range args[1:] {
 		names := strings.Split(v, ":")
 
-		col := sql.Column{}
+		col := sqlt.Column{}
 		col.SetName(names[1])
 		col.SetNewName(names[0])
 
@@ -164,7 +164,7 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create a "down" migration file.
 	fn = fmt.Sprintf("migrations/%d_rename_columns_in_%s_down.sql", timestamp, td.Name())
-	_, err = createMigration(fn, sql.RenameColumnTmpl, &td)
+	_, err = createMigration(fn, sqlt.RenameColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
