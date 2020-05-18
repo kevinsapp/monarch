@@ -23,5 +23,8 @@ vendor/
 # Ignore migrations folder and files (sometimes generated while testing)
 migrations/
 
+# Ignore database configuration file(s)
+database.yaml
+
 # Ignore tmp directory (sometime generated while testing)
 tmp/

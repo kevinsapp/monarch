@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	// pg
 	_ "github.com/lib/pq"
@@ -27,13 +28,21 @@ var dbCmd = &cobra.Command{
 
 // openDB ...
 func openDB(cmd *cobra.Command, args []string) {
-	host := "localhost"
-	port := 5432
-	user := "postgres"
-	pw := "postgres"
-	dbname := "monarch_development"
+	// h := "localhost"
+	// p := 5432
+	// u := "postgres"
+	// pw := "postgres"
+	// dn := "monarch_development"
+	// ssl := "disable"
 
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, pw, dbname)
+	h := viper.Get("development.host")
+	p := viper.Get("development.port")
+	u := viper.Get("development.user")
+	pw := viper.Get("development.password")
+	dn := viper.Get("development.database")
+	ssl := viper.Get("development.sslmode")
+
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", h, p, u, pw, dn, ssl)
 
 	var err error
 	db, err = sql.Open("postgres", dsn)
