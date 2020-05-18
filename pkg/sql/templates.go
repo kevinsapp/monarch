@@ -1,5 +1,26 @@
 package sql
 
+// SQL templates for DATABASE operaions
+const (
+	// CreateDBTmpl is a SQL template for creating databases.
+	CreateDBTmpl string = `-- Database: {{.Name}}
+
+CREATE DATABASE monarch_development
+    WITH 
+    OWNER = {{.Owner}}
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.utf8'
+    LC_CTYPE = 'en_US.utf8'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+`
+	// DropTableTmpl is a SQL template for dropping databases.
+	DropDBTmpl string = `-- Database: {{.Name}}
+
+DROP DATABASE {{.Name}};
+`
+)
+
 // SQL templates for TABLE operaions
 const (
 	// CreateTableTmpl is a SQL template for creating tables.
