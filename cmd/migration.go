@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +22,7 @@ var migrationCmd = &cobra.Command{
 }
 
 // createMigration creates a migration file based on arguments.
-func createMigration(fname, sqlt string, data interface{}) (*os.File, error) {
+func createMigration(fname, tmpl string, data interface{}) (*os.File, error) {
 	// Create a migration file.
 	f, err := os.Create(fname)
 	if err != nil {
@@ -30,13 +31,13 @@ func createMigration(fname, sqlt string, data interface{}) (*os.File, error) {
 	defer f.Close()
 
 	// Process SQL template
-	sql, err := sqlt.ProcessTmpl(data, sqlt)
+	s, err := sqlt.ProcessTmpl(data, tmpl)
 	if err != nil {
 		return f, err
 	}
 
 	// Write SQL to the file.
-	_, err = f.WriteString(sql)
+	_, err = f.WriteString(s)
 	if err != nil {
 		return f, err
 	}

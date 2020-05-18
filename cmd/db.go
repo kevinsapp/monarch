@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
 
-	sqlt "github.com/kevinsapp/monarch/pkg/sql"
+	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -14,22 +15,13 @@ import (
 )
 
 // Global ...
-var db *sqlt.DB
+var db *sql.DB
 var dsn string
 
 func init() {
 	rootCmd.AddCommand(dbCmd)
 	dbCmd.AddCommand(createDBCmd)
 	dbCmd.AddCommand(dropDBCmd)
-
-	host := viper.Get("development.host")
-	port := viper.Get("development.port")
-	user := viper.Get("development.user")
-	pw := viper.Get("development.password")
-	dbname := viper.Get("development.database")
-	sslmode := viper.Get("development.sslmode")
-	dsnFormat := "host=%s port=%d user=%s password=%s dbname=%s sslmode=%s"
-	dsn = fmt.Sprintf(dsnFormat, host, port, user, pw, dbname, sslmode)
 }
 
 // dbCmd ...
@@ -52,8 +44,17 @@ var dropDBCmd = &cobra.Command{
 
 // openDB ...
 func openDB(cmd *cobra.Command, args []string) {
+	host := viper.Get("development.host")
+	port := viper.Get("development.port")
+	user := viper.Get("development.user")
+	pw := viper.Get("development.password")
+	dbname := viper.Get("development.database")
+	sslmode := viper.Get("development.sslmode")
+	dsnFormat := "host=%s port=%d user=%s password=%s dbname=%s sslmode=%s"
+	dsn = fmt.Sprintf(dsnFormat, host, port, user, pw, dbname, sslmode)
+
 	var err error
-	db, err = sqlt.Open("postgres", dsn)
+	db, err = sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("ERROR: %v\n", err)
 	}
@@ -84,7 +85,7 @@ func createDB(cmd *cobra.Command, args []string) error {
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=%s", host, port, user, pw, ssl)
 
 	// Open a DB connection pool
-	db, err := sqlt.Open("postgres", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
@@ -127,7 +128,7 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=%s", host, port, user, pw, ssl)
 
 	// Open a DB connection pool
-	db, err := sqlt.Open("postgres", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatalf("ERROR: dropDB: %s\n", err)
 	}

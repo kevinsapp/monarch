@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"testing"
 
-	sqlt "github.com/kevinsapp/monarch/pkg/sql"
+	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 )
 
