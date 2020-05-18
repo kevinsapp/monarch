@@ -25,7 +25,6 @@ func ping(cmd *cobra.Command, args []string) error {
 	err := db.Ping()
 	since := time.Since(now)
 	if err != nil {
-		// log.Fatalf("ERROR: %v\n", err)
 		log.Printf("ERROR: %v\n", err)
 		return err
 	}

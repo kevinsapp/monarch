@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	// pg
 	_ "github.com/lib/pq"
 )
 
@@ -21,8 +20,7 @@ func init() {
 
 // dbCmd ...
 var dbCmd = &cobra.Command{
-	Use: "db",
-	// Run: openDB,
+	Use:              "db",
 	PersistentPreRun: openDB,
 }
 
