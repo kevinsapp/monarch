@@ -18,11 +18,12 @@ var pingCmd = &cobra.Command{
 }
 
 // Ping the database to verify that the server is accessible.
-// If ping fails, exit the application with an error.
+// If ping fails, log and return an error.
 func ping(cmd *cobra.Command, args []string) error {
 	err := db.Ping()
 	if err != nil {
-		log.Fatalf("ERROR: %v\n", err)
+		// log.Fatalf("ERROR: %v\n", err)
+		log.Printf("ERROR: %v\n", err)
 		return err
 	}
 
