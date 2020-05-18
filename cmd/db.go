@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	// pg
 	_ "github.com/lib/pq"
 )
 

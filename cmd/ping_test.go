@@ -13,13 +13,16 @@ func TestDBPing(t *testing.T) {
 	cmd := &cobra.Command{}
 	args := make([]string, 0)
 
+	// Initialize configuration from config file.
+	initConfig()
+
 	// Open the DB connection pool.
 	openDB(cmd, args)
 
 	// Run ping() and verify that no errors occur.
 	err := ping(cmd, args)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 
 	// Open DB with invalid password in DSN.

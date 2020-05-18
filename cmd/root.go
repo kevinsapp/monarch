@@ -2,9 +2,13 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"path"
+	"path/filepath"
+	"runtime"
 
 	"github.com/spf13/cobra"
 
@@ -64,21 +68,36 @@ func initConfig() {
 		// // Search config in home directory with name ".monarch" (without extension).
 		// viper.AddConfigPath(home)
 
-		// Seatch for config file in the current working directory with name "database" (without extension).
-		viper.AddConfigPath(".")
+		// Determine project root directory.
+		dir, err := rootDir()
+		if err != nil {
+			log.Fatalf("Error: %s", err)
+		}
+
+		// Seatch for config file in the project root directory with name "database" (without extension).
+		viper.AddConfigPath(dir)
 		viper.SetConfigName("database")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
-
-	// // If a config file is found, read it in.
-	// if err := viper.ReadInConfig(); err == nil {
-	// 	fmt.Println("Using config file:", viper.ConfigFileUsed())
-	// }
 
 	// If no config fils is found, log an error.
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatalf("Error: could not read in config file %q (with extenstion .json, .toml, or .yaml)", cfgFileBaseName)
 	}
+}
+
+// rootDir returns the project root directory.
+func rootDir() (string, error) {
+	var err error
+	_, b, _, ok := runtime.Caller(0)
+	if ok != true {
+		err = errors.New("rootDir: could not determine project root directory")
+		return "", err
+	}
+
+	d := path.Join(path.Dir(b))
+
+	return filepath.Dir(d), err
 }
