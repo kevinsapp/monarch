@@ -28,3 +28,13 @@ func (t *Database) NewName() string {
 func (t *Database) SetNewName(name string) {
 	t.newName = strcase.ToSnake(name)
 }
+
+// Owner ...
+func (t *Database) Owner() string {
+	return t.owner
+}
+
+// SetOwner ...
+func (t *Database) SetOwner(owner string) {
+	t.owner = strcase.ToSnake(owner)
+}

@@ -79,3 +79,26 @@ func TestDatabaseSetNewName(t *testing.T) {
 		}
 	}
 }
+
+func TestDatabaseOwner(t *testing.T) {
+	db := Database{}
+	db.owner = "postgres"
+
+	exp := db.owner
+	act := db.Owner() // Run Database.Owner()
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+}
+
+func TestDatabaseSetOwner(t *testing.T) {
+	o := "postgres"
+
+	db := Database{}
+	db.SetOwner(o) // Run Database.SetOwner()
+	exp := o
+	act := db.owner
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+}
