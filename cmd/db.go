@@ -28,6 +28,7 @@ func init() {
 // dbCmd ...
 var dbCmd = &cobra.Command{
 	Use:               "db",
+	Short:             `Provides subcommands for working with databases.`,
 	PersistentPreRunE: openDB,
 }
 

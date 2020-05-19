@@ -22,8 +22,8 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "monarch",
-	Short: "Monarch is a tool for migrating databases.",
-	Long:  `Monarch is a tool for migrating databases.`,
+	Short: "Monarch is a tool for migrating SQL databases.",
+	Long:  `Monarch is a tool for migrating SQL databases.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },

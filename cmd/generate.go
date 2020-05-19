@@ -12,4 +12,5 @@ func init() {
 var generateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"g"},
+	Short:   `Generates config and migration files.`,
 }
