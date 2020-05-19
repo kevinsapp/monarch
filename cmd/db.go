@@ -59,7 +59,7 @@ var resetDBCmd = &cobra.Command{
 func openDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
-	dsn := srv.getDSN()
+	dsn := srv.dsn()
 
 	var err error
 	db, err = sql.Open("postgres", dsn)
@@ -90,7 +90,7 @@ func createDB(cmd *cobra.Command, args []string) error {
 
 	// Open a DB connection pool
 	srv.dbName = "" // dbName should be blank before getting dsn.
-	db, err := sql.Open("postgres", srv.getDSN())
+	db, err := sql.Open("postgres", srv.dsn())
 	if err != nil {
 		log.Printf("ERROR: createDB: %s\n", err)
 		return err
@@ -129,7 +129,7 @@ func dropDB(cmd *cobra.Command, args []string) error {
 
 	// Open a DB connection pool
 	srv.dbName = "" // dbName should be blank before getting dsn.
-	db, err := sql.Open("postgres", srv.getDSN())
+	db, err := sql.Open("postgres", srv.dsn())
 	if err != nil {
 		log.Printf("ERROR: dropDB: %s\n", err)
 		return err
@@ -194,7 +194,7 @@ type dbServer struct {
 	sslMode  string
 }
 
-func (s *dbServer) getDSN() string {
+func (s *dbServer) dsn() string {
 	// If dbName is not set, format a data source name without a dbname and return it.
 	if s.dbName == "" {
 		format := "host=%s port=%d user=%s password=%s sslmode=%s"

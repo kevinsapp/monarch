@@ -113,3 +113,28 @@ func TestResetDB(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestDBServerDSN(t *testing.T) {
+	var srv dbServer
+	srv.host = "abcd"
+	srv.port = 1234
+	srv.user = "abcd"
+	srv.password = "abcd"
+	srv.dbName = "test_db"
+	srv.sslMode = "disable"
+
+	// Verify dsn with dbName set.
+	exp := "host=abcd port=1234 user=abcd password=abcd dbname=test_db sslmode=disable"
+	act := srv.dsn()
+	if exp != act {
+		t.Errorf("want %q;\n got %q\n", exp, act)
+	}
+
+	// Verify dsn with dbName blank.
+	srv.dbName = ""
+	exp = "host=abcd port=1234 user=abcd password=abcd sslmode=disable"
+	act = srv.dsn()
+	if exp != act {
+		t.Errorf("want %q;\n got %q\n", exp, act)
+	}
+}
