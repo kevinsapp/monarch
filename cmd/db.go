@@ -26,8 +26,8 @@ func init() {
 
 // dbCmd ...
 var dbCmd = &cobra.Command{
-	Use:              "db",
-	PersistentPreRun: openDB,
+	Use:               "db",
+	PersistentPreRunE: openDB,
 }
 
 // createCmd ...
@@ -49,7 +49,7 @@ var pingDBCmd = &cobra.Command{
 }
 
 // openDB ...
-func openDB(cmd *cobra.Command, args []string) {
+func openDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
 	dsn := srv.getDSN()
@@ -57,8 +57,11 @@ func openDB(cmd *cobra.Command, args []string) {
 	var err error
 	db, err = sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatalf("ERROR: openDB: %s\n", err)
+		log.Printf("ERROR: openDB: %s\n", err)
+		return err
 	}
+
+	return err
 }
 
 // createDB ...
@@ -74,14 +77,16 @@ func createDB(cmd *cobra.Command, args []string) error {
 	// Process SQL template
 	query, err := sqlt.ProcessTmpl(&database, sqlt.CreateDBTmpl)
 	if err != nil {
-		log.Fatalf("ERROR: createDB: %s\n", err)
+		log.Printf("ERROR: createDB: %s\n", err)
+		return err
 	}
 
 	// Open a DB connection pool
 	srv.dbName = "" // dbName should be blank before getting dsn.
 	db, err := sql.Open("postgres", srv.getDSN())
 	if err != nil {
-		log.Fatalf("ERROR: createDB: %s\n", err)
+		log.Printf("ERROR: createDB: %s\n", err)
+		return err
 	}
 	defer db.Close()
 
@@ -90,12 +95,13 @@ func createDB(cmd *cobra.Command, args []string) error {
 	_, err = db.Exec(query)
 	duration := time.Since(start)
 	if err != nil {
-		log.Fatalf("ERROR: createDB: %s\n", err)
+		log.Printf("ERROR: createDB: %s\n", err)
+		return err
 	}
 
 	fmt.Printf("Database %q created. Server replied in %s.\n", database.Name(), duration)
 
-	return nil
+	return err
 }
 
 // dropDB ...
@@ -110,14 +116,16 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	// Process SQL template
 	query, err := sqlt.ProcessTmpl(&database, sqlt.DropDBTmpl)
 	if err != nil {
-		log.Fatalf("ERROR: dropDB: %s\n", err)
+		log.Printf("ERROR: dropDB: %s\n", err)
+		return err
 	}
 
 	// Open a DB connection pool
 	srv.dbName = "" // dbName should be blank before getting dsn.
 	db, err := sql.Open("postgres", srv.getDSN())
 	if err != nil {
-		log.Fatalf("ERROR: dropDB: %s\n", err)
+		log.Printf("ERROR: dropDB: %s\n", err)
+		return err
 	}
 	defer db.Close()
 
@@ -126,12 +134,13 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	_, err = db.Exec(query)
 	duration := time.Since(start)
 	if err != nil {
-		log.Fatalf("ERROR: dropDB: %s\n", err)
+		log.Printf("ERROR: dropDB: %s\n", err)
+		return err
 	}
 
 	fmt.Printf("Database %q dropped. Server replied in %s.\n", database.Name(), duration)
 
-	return nil
+	return err
 }
 
 // Ping the database to verify that the server is accessible.
@@ -147,7 +156,7 @@ func pingDB(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("Database connection OK. Server replied in %s.\n", since)
 
-	return nil
+	return err
 }
 
 // resetDB
@@ -155,11 +164,16 @@ func resetDB(cmd *cobra.Command, args []string) error {
 	// Drop DB
 	err := dropDB(cmd, args)
 	if err != nil {
+		log.Printf("ERROR: resetDB: %s\n", err)
 		return err
 	}
 
 	// Create DB
 	err = createDB(cmd, args)
+	if err != nil {
+		log.Printf("ERROR: resetDB: %s\n", err)
+	}
+
 	return err
 }
 
