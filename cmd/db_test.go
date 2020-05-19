@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"database/sql"
 	"testing"
 
 	"github.com/spf13/cobra"
 )
 
-// Unit test dbPing()
-func TestDBPing(t *testing.T) {
+func TestCreateDB(t *testing.T) {
 	// Set up arguments.
 	cmd := &cobra.Command{}
 	args := make([]string, 0)
@@ -16,24 +14,102 @@ func TestDBPing(t *testing.T) {
 	// Initialize configuration from config file.
 	initConfig()
 
-	// Open the DB connection pool.
-	openDB(cmd, args)
+	// Drop DB
+	err := dropDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Run ping() and verify that no errors occur.
-	err := pingDB(cmd, args)
+	// Run createDB() and verify that no errors occur.
+	err = createDB(cmd, args)
 	if err != nil {
 		t.Error(err)
 	}
 
-	// Open DB with invalid password in DSN.
-	dsn := "host=localhost port=5432 user=postgres password=wrongpw dbname=monarch_development sslmode=disable"
-	db, _ = sql.Open("postgres", dsn)
+	// Do cleanup.
+	err = dropDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
-	// Run ping() and verify that the correct error is returned.
+func TestDropDB(t *testing.T) {
+	// Set up arguments.
+	cmd := &cobra.Command{}
+	args := make([]string, 0)
+
+	// Initialize configuration from config file.
+	initConfig()
+
+	// Run dropDB() and verify that no errors occur.
+	err := dropDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Run createDB(): need a database to drop.
+	err = createDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Run dropDB() and verify that no errors occur.
+	err = dropDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Unit test dbPing()
+func TestPingDB(t *testing.T) {
+	// Set up arguments.
+	cmd := &cobra.Command{}
+	args := make([]string, 0)
+
+	// Initialize configuration from config file.
+	initConfig()
+
+	// Reset DB
+	err := resetDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Open the DB connection pool.
+	openDB(cmd, args)
+
+	// Run pingDB() and verify that no errors occur.
 	err = pingDB(cmd, args)
-	exp := `pq: password authentication failed for user "postgres"`
-	act := err.Error()
-	if exp != act {
-		t.Errorf("want %q; got %q", exp, act)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Do cleanup.
+	// Close the global db connection pool and drop the database to avoid conflicts with other tests.
+	db.Close()
+	err = dropDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestResetDB(t *testing.T) {
+	// Set up arguments.
+	cmd := &cobra.Command{}
+	args := make([]string, 0)
+
+	// Initialize configuration from config file.
+	initConfig()
+
+	// Run ResetDB().
+	err := resetDB(cmd, args)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Do cleanup.
+	err = dropDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

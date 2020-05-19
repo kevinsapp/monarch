@@ -57,7 +57,7 @@ func openDB(cmd *cobra.Command, args []string) {
 	var err error
 	db, err = sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatalf("ERROR: %v\n", err)
+		log.Fatalf("ERROR: openDB: %s\n", err)
 	}
 }
 
@@ -74,7 +74,7 @@ func createDB(cmd *cobra.Command, args []string) error {
 	// Process SQL template
 	query, err := sqlt.ProcessTmpl(&database, sqlt.CreateDBTmpl)
 	if err != nil {
-		log.Fatalf("Error: createDB: %s\n", err)
+		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
 
 	// Open a DB connection pool
@@ -90,7 +90,7 @@ func createDB(cmd *cobra.Command, args []string) error {
 	_, err = db.Exec(query)
 	duration := time.Since(start)
 	if err != nil {
-		log.Fatalf("Error: createDB: %s\n", err)
+		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
 
 	fmt.Printf("Database %q created. Server replied in %s.\n", database.Name(), duration)
@@ -103,14 +103,14 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
 
-	// Configure database object params for SQL template.
+	// Configure database object for SQL template.
 	database := sqlt.Database{}
 	database.SetName(srv.dbName)
 
 	// Process SQL template
 	query, err := sqlt.ProcessTmpl(&database, sqlt.DropDBTmpl)
 	if err != nil {
-		log.Fatalf("Error: createDB: %s\n", err)
+		log.Fatalf("ERROR: dropDB: %s\n", err)
 	}
 
 	// Open a DB connection pool
@@ -121,12 +121,12 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	}
 	defer db.Close()
 
-	// Execute query to create database.
+	// Execute query to drop database.
 	start := time.Now()
 	_, err = db.Exec(query)
 	duration := time.Since(start)
 	if err != nil {
-		log.Fatalf("Error: createDB: %s\n", err)
+		log.Fatalf("ERROR: dropDB: %s\n", err)
 	}
 
 	fmt.Printf("Database %q dropped. Server replied in %s.\n", database.Name(), duration)
@@ -150,6 +150,19 @@ func pingDB(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// resetDB
+func resetDB(cmd *cobra.Command, args []string) error {
+	// Drop DB
+	err := dropDB(cmd, args)
+	if err != nil {
+		return err
+	}
+
+	// Create DB
+	err = createDB(cmd, args)
+	return err
+}
+
 // dbServer
 type dbServer struct {
 	host     string
@@ -168,7 +181,7 @@ func (s *dbServer) getDSN() string {
 		return dsn
 	}
 
-	// Format at data source name.
+	// Format a data source name.
 	format := "host=%s port=%d user=%s password=%s dbname=%s sslmode=%s"
 	dsn := fmt.Sprintf(format, s.host, s.port, s.user, s.password, s.dbName, s.sslMode)
 

@@ -17,7 +17,7 @@ CREATE DATABASE monarch_development
 	// DropTableTmpl is a SQL template for dropping databases.
 	DropDBTmpl string = `-- Database: {{.Name}}
 
-DROP DATABASE {{.Name}};
+DROP DATABASE IF EXISTS {{.Name}};
 `
 )
 
