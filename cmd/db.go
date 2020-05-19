@@ -18,6 +18,41 @@ import (
 var db *sql.DB
 var dsn string
 
+// dbServer
+type dbServer struct {
+	host     string
+	port     int
+	user     string
+	password string
+	dbName   string
+	sslMode  string
+}
+
+func (s *dbServer) getDSN() string {
+	// If dbName is not set, format a data source name without a dbname and return it.
+	if s.dbName == "" {
+		format := "host=%s port=%d user=%s password=%s sslmode=%s"
+		dsn := fmt.Sprintf(format, s.host, s.port, s.user, s.password, s.sslMode)
+		return dsn
+	}
+
+	// Format at data source name.
+	format := "host=%s port=%d user=%s password=%s dbname=%s sslmode=%s"
+	dsn := fmt.Sprintf(format, s.host, s.port, s.user, s.password, s.dbName, s.sslMode)
+
+	return dsn
+}
+
+func (s *dbServer) initFromConfig() {
+	// Read in config.
+	s.host = viper.GetString("development.host")
+	s.port = viper.GetInt("development.port")
+	s.user = viper.GetString("development.user")
+	s.password = viper.GetString("development.password")
+	s.dbName = viper.GetString("development.database")
+	s.sslMode = viper.GetString("development.sslmode")
+}
+
 func init() {
 	rootCmd.AddCommand(dbCmd)
 	dbCmd.AddCommand(createDBCmd)
@@ -44,14 +79,9 @@ var dropDBCmd = &cobra.Command{
 
 // openDB ...
 func openDB(cmd *cobra.Command, args []string) {
-	host := viper.Get("development.host")
-	port := viper.Get("development.port")
-	user := viper.Get("development.user")
-	pw := viper.Get("development.password")
-	dbname := viper.Get("development.database")
-	sslmode := viper.Get("development.sslmode")
-	dsnFormat := "host=%s port=%d user=%s password=%s dbname=%s sslmode=%s"
-	dsn = fmt.Sprintf(dsnFormat, host, port, user, pw, dbname, sslmode)
+	var srv dbServer
+	srv.initFromConfig()
+	dsn = srv.getDSN()
 
 	var err error
 	db, err = sql.Open("postgres", dsn)
@@ -62,18 +92,13 @@ func openDB(cmd *cobra.Command, args []string) {
 
 // createDB ...
 func createDB(cmd *cobra.Command, args []string) error {
-	// Get config
-	host := viper.GetString("development.host")
-	port := viper.GetInt("development.port")
-	user := viper.GetString("development.user")
-	pw := viper.GetString("development.password")
-	ssl := viper.GetString("development.sslmode")
+	var srv dbServer
+	srv.initFromConfig()
 
 	// Configure database object params for SQL template.
-	dbname := viper.GetString("development.database")
 	database := sqlt.Database{}
-	database.SetName(dbname)
-	database.SetOwner(user)
+	database.SetName(srv.dbName)
+	database.SetOwner(srv.user)
 
 	// Process SQL template
 	query, err := sqlt.ProcessTmpl(&database, sqlt.CreateDBTmpl)
@@ -81,11 +106,9 @@ func createDB(cmd *cobra.Command, args []string) error {
 		log.Fatalf("Error: createDB: %s\n", err)
 	}
 
-	// Format data source name (dsn)
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=%s", host, port, user, pw, ssl)
-
 	// Open a DB connection pool
-	db, err := sql.Open("postgres", dsn)
+	srv.dbName = "" // dbName should be blank before getting dsn.
+	db, err := sql.Open("postgres", srv.getDSN())
 	if err != nil {
 		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
@@ -106,17 +129,12 @@ func createDB(cmd *cobra.Command, args []string) error {
 
 // dropDB ...
 func dropDB(cmd *cobra.Command, args []string) error {
-	// Get config
-	host := viper.GetString("development.host")
-	port := viper.GetInt("development.port")
-	user := viper.GetString("development.user")
-	pw := viper.GetString("development.password")
-	ssl := viper.GetString("development.sslmode")
+	var srv dbServer
+	srv.initFromConfig()
 
 	// Configure database object params for SQL template.
-	dbname := viper.GetString("development.database")
 	database := sqlt.Database{}
-	database.SetName(dbname)
+	database.SetName(srv.dbName)
 
 	// Process SQL template
 	query, err := sqlt.ProcessTmpl(&database, sqlt.DropDBTmpl)
@@ -124,11 +142,9 @@ func dropDB(cmd *cobra.Command, args []string) error {
 		log.Fatalf("Error: createDB: %s\n", err)
 	}
 
-	// Format data source name (dsn)
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=%s", host, port, user, pw, ssl)
-
 	// Open a DB connection pool
-	db, err := sql.Open("postgres", dsn)
+	srv.dbName = "" // dbName should be blank before getting dsn.
+	db, err := sql.Open("postgres", srv.getDSN())
 	if err != nil {
 		log.Fatalf("ERROR: dropDB: %s\n", err)
 	}
