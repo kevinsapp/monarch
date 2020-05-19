@@ -59,7 +59,7 @@ var resetDBCmd = &cobra.Command{
 	RunE:  resetDB,
 }
 
-// openDB opens a connection pool for the database specified in the viper configuration.
+// openDB opens a connection pool for the database specified in the viper config.
 func openDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
