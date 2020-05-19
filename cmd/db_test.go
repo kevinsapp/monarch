@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func TestCreateDB(t *testing.T) {
@@ -136,5 +137,53 @@ func TestDBServerDSN(t *testing.T) {
 	act = srv.dsn()
 	if exp != act {
 		t.Errorf("want %q;\n got %q\n", exp, act)
+	}
+}
+
+func TestDBServerInitFromConfig(t *testing.T) {
+	viper.Set("development.host", "ahost")
+	viper.Set("development.port", 1234)
+	viper.Set("development.user", "auser")
+	viper.Set("development.password", "apassword")
+	viper.Set("development.database", "adb")
+	viper.Set("development.sslmode", "disable")
+
+	var srv dbServer
+	srv.initFromConfig()
+
+	exp := srv.host
+	act := viper.GetString("development.host")
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+
+	exp = srv.user
+	act = viper.GetString("development.user")
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+
+	exp = srv.password
+	act = viper.GetString("development.password")
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+
+	exp = srv.dbName
+	act = viper.GetString("development.database")
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+
+	exp = srv.sslMode
+	act = viper.GetString("development.sslmode")
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+
+	expPort := srv.port
+	actPort := viper.GetInt("development.host")
+	if exp != act {
+		t.Errorf("want %q; got %q", expPort, actPort)
 	}
 }
