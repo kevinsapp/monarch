@@ -199,6 +199,7 @@ type dbServer struct {
 	sslMode  string
 }
 
+// dsn returns a Data Source Name (dsn) string based on the dbServer attributes.
 func (s *dbServer) dsn() string {
 	// If dbName is not set, format a data source name without a dbname and return it.
 	if s.dbName == "" {
@@ -214,6 +215,7 @@ func (s *dbServer) dsn() string {
 	return dsn
 }
 
+// intiFromConfig initalizes a dbServer{} from the viper config.
 func (s *dbServer) initFromConfig() {
 	// Read in config.
 	s.host = viper.GetString("development.host")
