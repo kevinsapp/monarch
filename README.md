@@ -10,11 +10,23 @@ Monarch is a command line tool for migrating SQL databases.
 * Change column's default value
 
 ## Usage
-Create a table
+
+### Generating Migrations
+***Create a table***
+
+Syntax
 `monarch generate migration create table [name]`
 
-Create a table with columns
+Example: generate a migration to create a table named "users"
+`monarch generate migration create table users`
+
+***Create a table with columns***
+
+Syntax
 `monarch generate migration create table [name] [ [colName:type] ... ]`
+
+Example: generate a migration to create a table named "users" with columns "given_name" and "family_name"
+`monarch generate migration create table users`
 
 Drop a table
 `monarch generate migration drop table [name]`

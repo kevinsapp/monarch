@@ -33,29 +33,33 @@ var dbCmd = &cobra.Command{
 
 // createCmd ...
 var createDBCmd = &cobra.Command{
-	Use:  "create",
-	RunE: createDB,
+	Use:   "create",
+	Short: `Create a database with the name specificed by the "database" attribute in the config file.`,
+	RunE:  createDB,
 }
 
 // dropCmd ...
 var dropDBCmd = &cobra.Command{
-	Use:  "drop",
-	RunE: dropDB,
+	Use:   "drop",
+	Short: `Drop a database with the name specificed by the "database" attribute in the config file.`,
+	RunE:  dropDB,
 }
 
 // pingDBCmd ...
 var pingDBCmd = &cobra.Command{
-	Use:  "ping",
-	RunE: pingDB,
+	Use:   "ping",
+	Short: `Verifies that Monarch can connect to the database specificed in the config file.`,
+	RunE:  pingDB,
 }
 
 // resetDBCmd ...
 var resetDBCmd = &cobra.Command{
-	Use:  "reset",
-	RunE: resetDB,
+	Use:   "reset",
+	Short: `First drops and then creates a database with the name specificed by the "database" attribute in the config file.`,
+	RunE:  resetDB,
 }
 
-// openDB ...
+// openDB opens a connection pool for the database specified in the viper configuration.
 func openDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
@@ -71,8 +75,9 @@ func openDB(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// createDB ...
+// createDB creates a database with the name specificed by the "database" attribute in the viper config.
 func createDB(cmd *cobra.Command, args []string) error {
+	// Initialize a dbServer object.
 	var srv dbServer
 	srv.initFromConfig()
 
@@ -89,7 +94,7 @@ func createDB(cmd *cobra.Command, args []string) error {
 	}
 
 	// Open a DB connection pool
-	srv.dbName = "" // dbName should be blank before getting dsn.
+	srv.dbName = "" // dbName should be blank before getting DSN.
 	db, err := sql.Open("postgres", srv.dsn())
 	if err != nil {
 		log.Printf("ERROR: createDB: %s\n", err)
@@ -111,7 +116,7 @@ func createDB(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// dropDB ...
+// dropDB drops a database with the name specificed by the "database" attribute in the viper config.
 func dropDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
