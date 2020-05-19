@@ -22,6 +22,7 @@ func init() {
 	dbCmd.AddCommand(createDBCmd)
 	dbCmd.AddCommand(dropDBCmd)
 	dbCmd.AddCommand(pingDBCmd)
+	dbCmd.AddCommand(resetDBCmd)
 }
 
 // dbCmd ...
@@ -42,10 +43,16 @@ var dropDBCmd = &cobra.Command{
 	RunE: dropDB,
 }
 
-// pingCmd ...
+// pingDBCmd ...
 var pingDBCmd = &cobra.Command{
 	Use:  "ping",
 	RunE: pingDB,
+}
+
+// resetDBCmd ...
+var resetDBCmd = &cobra.Command{
+	Use:  "reset",
+	RunE: resetDB,
 }
 
 // openDB ...
