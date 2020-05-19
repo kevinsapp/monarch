@@ -20,7 +20,7 @@ func TestDBPing(t *testing.T) {
 	openDB(cmd, args)
 
 	// Run ping() and verify that no errors occur.
-	err := ping(cmd, args)
+	err := pingDB(cmd, args)
 	if err != nil {
 		t.Error(err)
 	}
@@ -30,7 +30,7 @@ func TestDBPing(t *testing.T) {
 	db, _ = sql.Open("postgres", dsn)
 
 	// Run ping() and verify that the correct error is returned.
-	err = ping(cmd, args)
+	err = pingDB(cmd, args)
 	exp := `pq: password authentication failed for user "postgres"`
 	act := err.Error()
 	if exp != act {

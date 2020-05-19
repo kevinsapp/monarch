@@ -16,47 +16,12 @@ import (
 
 // Global ...
 var db *sql.DB
-var dsn string
-
-// dbServer
-type dbServer struct {
-	host     string
-	port     int
-	user     string
-	password string
-	dbName   string
-	sslMode  string
-}
-
-func (s *dbServer) getDSN() string {
-	// If dbName is not set, format a data source name without a dbname and return it.
-	if s.dbName == "" {
-		format := "host=%s port=%d user=%s password=%s sslmode=%s"
-		dsn := fmt.Sprintf(format, s.host, s.port, s.user, s.password, s.sslMode)
-		return dsn
-	}
-
-	// Format at data source name.
-	format := "host=%s port=%d user=%s password=%s dbname=%s sslmode=%s"
-	dsn := fmt.Sprintf(format, s.host, s.port, s.user, s.password, s.dbName, s.sslMode)
-
-	return dsn
-}
-
-func (s *dbServer) initFromConfig() {
-	// Read in config.
-	s.host = viper.GetString("development.host")
-	s.port = viper.GetInt("development.port")
-	s.user = viper.GetString("development.user")
-	s.password = viper.GetString("development.password")
-	s.dbName = viper.GetString("development.database")
-	s.sslMode = viper.GetString("development.sslmode")
-}
 
 func init() {
 	rootCmd.AddCommand(dbCmd)
 	dbCmd.AddCommand(createDBCmd)
 	dbCmd.AddCommand(dropDBCmd)
+	dbCmd.AddCommand(pingDBCmd)
 }
 
 // dbCmd ...
@@ -77,11 +42,17 @@ var dropDBCmd = &cobra.Command{
 	RunE: dropDB,
 }
 
+// pingCmd ...
+var pingDBCmd = &cobra.Command{
+	Use:  "ping",
+	RunE: pingDB,
+}
+
 // openDB ...
 func openDB(cmd *cobra.Command, args []string) {
 	var srv dbServer
 	srv.initFromConfig()
-	dsn = srv.getDSN()
+	dsn := srv.getDSN()
 
 	var err error
 	db, err = sql.Open("postgres", dsn)
@@ -161,4 +132,55 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	fmt.Printf("Database %q dropped. Server replied in %s.\n", database.Name(), duration)
 
 	return nil
+}
+
+// Ping the database to verify that the server is accessible.
+// If ping fails, log and return an error.
+func pingDB(cmd *cobra.Command, args []string) error {
+	now := time.Now()
+	err := db.Ping()
+	since := time.Since(now)
+	if err != nil {
+		log.Printf("ERROR: pingDB: %s\n", err)
+		return err
+	}
+
+	fmt.Printf("Database connection OK. Server replied in %s.\n", since)
+
+	return nil
+}
+
+// dbServer
+type dbServer struct {
+	host     string
+	port     int
+	user     string
+	password string
+	dbName   string
+	sslMode  string
+}
+
+func (s *dbServer) getDSN() string {
+	// If dbName is not set, format a data source name without a dbname and return it.
+	if s.dbName == "" {
+		format := "host=%s port=%d user=%s password=%s sslmode=%s"
+		dsn := fmt.Sprintf(format, s.host, s.port, s.user, s.password, s.sslMode)
+		return dsn
+	}
+
+	// Format at data source name.
+	format := "host=%s port=%d user=%s password=%s dbname=%s sslmode=%s"
+	dsn := fmt.Sprintf(format, s.host, s.port, s.user, s.password, s.dbName, s.sslMode)
+
+	return dsn
+}
+
+func (s *dbServer) initFromConfig() {
+	// Read in config.
+	s.host = viper.GetString("development.host")
+	s.port = viper.GetInt("development.port")
+	s.user = viper.GetString("development.user")
+	s.password = viper.GetString("development.password")
+	s.dbName = viper.GetString("development.database")
+	s.sslMode = viper.GetString("development.sslmode")
 }
