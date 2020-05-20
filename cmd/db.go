@@ -60,46 +60,47 @@ var resetDBCmd = &cobra.Command{
 	RunE:  resetDB,
 }
 
-// openDB opens a connection pool for the database specified in the viper config.
+// openDB opens a connection pool on the global DB object for connecting to the
+// database specified in the viper config.
 func openDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
-	dsn := srv.dsn()
 
+	// Open a new connection pool and assign it to the global "db" variable,
+	// don't shadow it with a local variable.
 	var err error
-	db, err = sql.Open("postgres", dsn)
+	db, err = sql.Open("postgres", srv.dsn())
 	if err != nil {
-		log.Printf("ERROR: openDB: %s\n", err)
-		return err
+		log.Fatalf("ERROR: openDB: %s\n", err)
 	}
 
 	return err
 }
 
-// createDB creates a database with the name specificed by the "database" attribute in the viper config.
+// createDB creates a database with the name specificed by the "database"
+// attribute in the viper config.
 func createDB(cmd *cobra.Command, args []string) error {
 	// Initialize a dbServer object.
 	var srv dbServer
 	srv.initFromConfig()
 
-	// Configure database object params for SQL template.
+	// Configure a data object to apply to a SQL template.
 	database := sqlt.Database{}
 	database.SetName(srv.dbName)
 	database.SetOwner(srv.user)
 
-	// Process SQL template
+	// Process the SQL template.
 	query, err := sqlt.ProcessTmpl(&database, sqlt.CreateDBTmpl)
 	if err != nil {
-		log.Printf("ERROR: createDB: %s\n", err)
-		return err
+		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
 
-	// Open a DB connection pool
-	srv.dbName = "" // dbName should be blank before getting DSN.
-	db, err := sql.Open("postgres", srv.dsn())
+	// Open a DB connection pool local to this method, don't assign a new
+	// connection pool to the global variable.
+	srv.dbName = ""                            // dbName should be blank before getting DSN.
+	db, err := sql.Open("postgres", srv.dsn()) // shadow db; not global db
 	if err != nil {
-		log.Printf("ERROR: createDB: %s\n", err)
-		return err
+		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
 	defer db.Close()
 
@@ -108,7 +109,6 @@ func createDB(cmd *cobra.Command, args []string) error {
 	_, err = db.Exec(query)
 	duration := time.Since(start)
 	if err != nil {
-		log.Printf("ERROR: createDB: %s\n", err)
 		return err
 	}
 
@@ -117,7 +117,8 @@ func createDB(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// dropDB drops a database with the name specificed by the "database" attribute in the viper config.
+// dropDB drops a database with the name specificed by the "database" attribute
+// in the viper config.
 func dropDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
@@ -133,12 +134,12 @@ func dropDB(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Open a DB connection pool
+	// Open a DB connection pool local to this method, don't assign a new
+	// connection pool to the global variable.
 	srv.dbName = "" // dbName should be blank before getting dsn.
 	db, err := sql.Open("postgres", srv.dsn())
 	if err != nil {
-		log.Printf("ERROR: dropDB: %s\n", err)
-		return err
+		log.Fatalf("ERROR: dropDB: %s\n", err)
 	}
 	defer db.Close()
 
@@ -147,7 +148,6 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	_, err = db.Exec(query)
 	duration := time.Since(start)
 	if err != nil {
-		log.Printf("ERROR: dropDB: %s\n", err)
 		return err
 	}
 
@@ -156,36 +156,28 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// Ping the database to verify that the server is accessible.
-// If ping fails, log and return an error.
+// ping connects to the database to verify that the server is accessible.
 func pingDB(cmd *cobra.Command, args []string) error {
-	now := time.Now()
+	start := time.Now()
 	err := db.Ping()
-	since := time.Since(now)
+	duration := time.Since(start)
 	if err != nil {
-		log.Printf("ERROR: pingDB: %s\n", err)
 		return err
 	}
 
-	fmt.Printf("Database connection OK. Server replied in %s.\n", since)
+	fmt.Printf("Database connection OK. Server replied in %s.\n", duration)
 
 	return err
 }
 
-// resetDB
+// resetDB drops and creates a database, i.e. reset.
 func resetDB(cmd *cobra.Command, args []string) error {
-	// Drop DB
 	err := dropDB(cmd, args)
 	if err != nil {
-		log.Printf("ERROR: resetDB: %s\n", err)
 		return err
 	}
 
-	// Create DB
 	err = createDB(cmd, args)
-	if err != nil {
-		log.Printf("ERROR: resetDB: %s\n", err)
-	}
 
 	return err
 }

@@ -4,7 +4,7 @@ package cmd
 import (
 	"errors"
 	"log"
-	"path"
+	"os"
 	"path/filepath"
 	"runtime"
 
@@ -31,7 +31,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatalf("ERROR: Execute: %s\n", err)
+		os.Exit(1)
 	}
 }
 
@@ -78,13 +78,18 @@ func initConfig() {
 // rootDir returns the project root directory.
 func rootDir() (string, error) {
 	var err error
-	_, b, _, ok := runtime.Caller(0)
+	var dir string
+
+	// Determine which file contains this function's caller.
+	_, f, _, ok := runtime.Caller(0)
 	if ok != true {
 		err = errors.New("rootDir: could not determine project root directory")
-		return "", err
+		return dir, err
 	}
 
-	d := path.Join(path.Dir(b))
+	// Determine the file's parent directory.
+	dir = filepath.Dir(f)
 
-	return filepath.Dir(d), err
+	// Return the parent of the file's directory (and err).
+	return filepath.Dir(dir), err
 }
