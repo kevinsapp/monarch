@@ -3,9 +3,7 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"log"
-	"os"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -33,8 +31,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalf("ERROR: Execute: %s\n", err)
 	}
 }
 
@@ -58,33 +55,23 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// // Find home directory.
-		// home, err := homedir.Dir()
-		// if err != nil {
-		// 	fmt.Println(err)
-		// 	os.Exit(1)
-		// }
-
-		// // Search config in home directory with name ".monarch" (without extension).
-		// viper.AddConfigPath(home)
-
 		// Determine project root directory.
 		dir, err := rootDir()
 		if err != nil {
-			log.Fatalf("Error: %s", err)
+			log.Fatalf("ERROR: initConfig: %s\n", err)
 		}
 
-		// Seatch for config file in the project root directory with name "database" (without extension).
+		// Search for config file in the project root directory with name "database" (without extension).
 		viper.AddConfigPath(dir)
 		viper.SetConfigName("database")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If no config fils is found, log an error.
+	// If no config files is found, log an error.
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Error: could not read in config file %q (with extenstion .json, .toml, or .yaml)", cfgFileBaseName)
+		log.Fatalf("ERROR: initConfig: could not read in config file %q (with extenstion .json, .toml, or .yaml)", cfgFileBaseName)
 	}
 }
 
