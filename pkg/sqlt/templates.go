@@ -3,16 +3,17 @@ package sqlt
 // SQL templates for DATABASE operaions
 const (
 	// CreateDBTmpl is a SQL template for creating databases.
+	// TODO: consider adding options:
+	// ENCODING = 'UTF8'
+	// LC_COLLATE = 'en_US.utf8'
+	// LC_CTYPE = 'en_US.utf8'
+	// TABLESPACE = pg_default
+	// CONNECTION LIMIT = -1
 	CreateDBTmpl string = `-- Database: {{.Name}}
 
-CREATE DATABASE monarch_development
-    WITH 
-    OWNER = {{.Owner}}
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.utf8'
-    LC_CTYPE = 'en_US.utf8'
-    TABLESPACE = pg_default
-    CONNECTION LIMIT = -1;
+CREATE DATABASE {{.Name}}
+	WITH 
+	OWNER = {{.Owner}};
 `
 	// DropTableTmpl is a SQL template for dropping databases.
 	DropDBTmpl string = `-- Database: {{.Name}}
