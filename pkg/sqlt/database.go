@@ -9,32 +9,32 @@ type Database struct {
 	owner   string
 }
 
-// Name ...
+// Name returns name.
 func (t *Database) Name() string {
 	return t.name
 }
 
-// SetName ...
+// SetName converts string arg to snake_case then sets name.
 func (t *Database) SetName(name string) {
 	t.name = strcase.ToSnake(name)
 }
 
-// NewName ...
+// NewName returns new name.
 func (t *Database) NewName() string {
 	return t.newName
 }
 
-// SetNewName ...
+// SetNewName converts string arg to snake_case then sets new name.
 func (t *Database) SetNewName(name string) {
 	t.newName = strcase.ToSnake(name)
 }
 
-// Owner ...
+// Owner returns owner.
 func (t *Database) Owner() string {
 	return t.owner
 }
 
-// SetOwner ...
+// SetOwner sets owner.
 func (t *Database) SetOwner(owner string) {
 	t.owner = owner
 }
