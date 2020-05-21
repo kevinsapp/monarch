@@ -198,7 +198,7 @@ func migrateDB(cmd *cobra.Command, args []string) error {
 
 		fnParts := strings.Split(fn, "_")
 		version := fnParts[0]
-		sql = fmt.Sprintf("INSERT INTO schema_versio (version, created_at, updated_at) VALUES (%s, now(), now());", version)
+		sql = fmt.Sprintf("INSERT INTO schema_version (version, created_at, updated_at) VALUES (%s, now(), now());", version)
 		_, err = tx.Exec(ctx, sql)
 		if err != nil {
 			return err
