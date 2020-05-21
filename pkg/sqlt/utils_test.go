@@ -10,7 +10,7 @@ const (
 	testCreateTableSQL string = `-- Table: users
 
 CREATE TABLE users (
-	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	id bigint NOT NULL,
 	
 
 	-- Specify additional fields here.

@@ -15,7 +15,7 @@ const (
 	testCreateTableSQL string = `-- Table: users
 
 CREATE TABLE users (
-	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	id bigint NOT NULL,
 	
 
 	-- Specify additional fields here.
@@ -31,7 +31,7 @@ CREATE TABLE users (
 	testCreateTableWithColsSQL string = `-- Table: users
 
 CREATE TABLE users (
-	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	id bigint NOT NULL,
 	user_name varchar,
 	given_name varchar,
 	family_name varchar,

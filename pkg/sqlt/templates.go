@@ -28,7 +28,7 @@ const (
 	CreateTableTmpl string = `-- Table: {{.Name}}
 
 CREATE TABLE {{.Name}} (
-	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	id bigint NOT NULL,
 	{{range .Columns}}{{.Name}} {{.Type}},
 	{{end}}
 
