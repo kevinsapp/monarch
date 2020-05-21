@@ -41,5 +41,5 @@ func FileAsString(fn string) (string, error) {
 	}
 
 	// Return file contents as a string
-	return string(b), nil
+	return string(b), err
 }

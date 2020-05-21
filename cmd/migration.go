@@ -42,6 +42,8 @@ func createMigration(fname, tmpl string, data interface{}) (*os.File, error) {
 		return f, err
 	}
 
+	fmt.Printf("Migration file created: %s.\n", fname)
+
 	return f, err
 }
 

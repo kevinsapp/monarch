@@ -3,7 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -16,6 +18,7 @@ func init() {
 	rootCmd.AddCommand(dbCmd)
 	dbCmd.AddCommand(createDBCmd)
 	dbCmd.AddCommand(dropDBCmd)
+	dbCmd.AddCommand(migrateDBCmd)
 	dbCmd.AddCommand(pingDBCmd)
 	dbCmd.AddCommand(resetDBCmd)
 }
@@ -38,6 +41,13 @@ var dropDBCmd = &cobra.Command{
 	Use:   "drop",
 	Short: `Drop a database with the name specificed by the "database" attribute in the config file.`,
 	RunE:  dropDB,
+}
+
+// migrateCmd ...
+var migrateDBCmd = &cobra.Command{
+	Use:   "migrate",
+	Short: `Migrate a database.`,
+	RunE:  migrateDB,
 }
 
 // pingDBCmd ...
@@ -131,6 +141,81 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	fmt.Printf("Database %q dropped. Command completed in %s.\n", database.Name(), duration)
 
 	return err
+}
+
+func migrateDB(cmd *cobra.Command, args []string) error {
+	var srv dbServer
+	srv.initFromConfig()
+
+	// Connect to the database server.
+	ctx := context.Background()
+	conn, err := pgx.Connect(ctx, srv.dsn())
+	if err != nil {
+		return err
+	}
+	defer conn.Close(ctx)
+
+	// Begin a transaction.
+	tx, err := conn.Begin(ctx)
+	defer tx.Rollback(ctx)
+
+	// Timestamp command start.
+	start := time.Now()
+
+	// Create the schema_migrations table if it does not exist.
+	sql := `CREATE TABLE IF NOT EXISTS schema_versions (
+	version character varying NOT NULL,
+	created_at timestamp(6) without time zone NOT NULL,
+	updated_at timestamp(6) without time zone NOT NULL,
+	CONSTRAINT schema_migrations_pkey PRIMARY KEY (version));`
+
+	_, err = tx.Exec(ctx, sql)
+	if err != nil {
+		return err
+	}
+
+	// // TODO: load in sql from migration file.
+	migrationFiles, err := ioutil.ReadDir("migrations")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Select only the names of "up" migrations.
+	upMigrationFiles := make([]string, 0)
+	for _, file := range migrationFiles {
+		n := file.Name()
+		if strings.HasSuffix(n, "up.sql") {
+			upMigrationFiles = append(upMigrationFiles, n)
+		}
+	}
+
+	for _, fn := range upMigrationFiles {
+		sql, _ = sqlt.FileAsString("migrations/" + fn)
+		_, err = tx.Exec(ctx, sql)
+		if err != nil {
+			return err
+		}
+
+		fnParts := strings.Split(fn, "_")
+		version := fnParts[0]
+		sql = fmt.Sprintf("INSERT INTO schema_versio (version, created_at, updated_at) VALUES (%s, now(), now());", version)
+		_, err = tx.Exec(ctx, sql)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Timestamp command end.
+	duration := time.Since(start)
+
+	fmt.Printf("Database %q migrated. Command completed in %s.\n", srv.dbName, duration)
+
+	return nil
 }
 
 // ping connects to the database to verify that the server is accessible.
