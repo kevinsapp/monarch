@@ -1,21 +1,16 @@
 package cmd
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	// pg
-	_ "github.com/lib/pq"
 )
-
-// Global ...
-var db *sql.DB
 
 func init() {
 	rootCmd.AddCommand(dbCmd)
@@ -27,9 +22,8 @@ func init() {
 
 // dbCmd ...
 var dbCmd = &cobra.Command{
-	Use:               "db",
-	Short:             `Provides subcommands for working with databases.`,
-	PersistentPreRunE: openDB,
+	Use:   "db",
+	Short: `Provides subcommands for working with databases.`,
 }
 
 // createCmd ...
@@ -60,23 +54,6 @@ var resetDBCmd = &cobra.Command{
 	RunE:  resetDB,
 }
 
-// openDB opens a connection pool on the global DB object for connecting to the
-// database specified in the viper config.
-func openDB(cmd *cobra.Command, args []string) error {
-	var srv dbServer
-	srv.initFromConfig()
-
-	// Open a new connection pool and assign it to the global "db" variable,
-	// don't shadow it with a local variable.
-	var err error
-	db, err = sql.Open("postgres", srv.dsn())
-	if err != nil {
-		log.Fatalf("ERROR: openDB: %s\n", err)
-	}
-
-	return err
-}
-
 // createDB creates a database with the name specificed by the "database"
 // attribute in the viper config.
 func createDB(cmd *cobra.Command, args []string) error {
@@ -95,24 +72,24 @@ func createDB(cmd *cobra.Command, args []string) error {
 		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
 
-	// Open a DB connection pool local to this method, don't assign a new
-	// connection pool to the global variable.
-	srv.dbName = ""                            // dbName should be blank before getting DSN.
-	db, err := sql.Open("postgres", srv.dsn()) // shadow db; not global db
+	// Connect to the database server.
+	srv.dbName = "" // dbName should be blank before getting DSN.
+	ctx := context.Background()
+	conn, err := pgx.Connect(ctx, srv.dsn())
 	if err != nil {
 		log.Fatalf("ERROR: createDB: %s\n", err)
 	}
-	defer db.Close()
+	defer conn.Close(ctx)
 
 	// Execute query to create database.
 	start := time.Now()
-	_, err = db.Exec(query)
+	_, err = conn.Exec(ctx, query)
 	duration := time.Since(start)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Database %q created. Server replied in %s.\n", database.Name(), duration)
+	fmt.Printf("Database %q created. Command completed in %s.\n", database.Name(), duration)
 
 	return err
 }
@@ -123,7 +100,7 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
 	srv.initFromConfig()
 
-	// Configure database object for SQL template.
+	// Configure a data object to apply to a SQL template.
 	database := sqlt.Database{}
 	database.SetName(srv.dbName)
 
@@ -134,38 +111,49 @@ func dropDB(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Open a DB connection pool local to this method, don't assign a new
-	// connection pool to the global variable.
+	// Connect to the database server.
 	srv.dbName = "" // dbName should be blank before getting dsn.
-	db, err := sql.Open("postgres", srv.dsn())
+	ctx := context.Background()
+	conn, err := pgx.Connect(ctx, srv.dsn())
 	if err != nil {
 		log.Fatalf("ERROR: dropDB: %s\n", err)
 	}
-	defer db.Close()
+	defer conn.Close(ctx)
 
 	// Execute query to drop database.
 	start := time.Now()
-	_, err = db.Exec(query)
+	_, err = conn.Exec(ctx, query)
 	duration := time.Since(start)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Database %q dropped. Server replied in %s.\n", database.Name(), duration)
+	fmt.Printf("Database %q dropped. Command completed in %s.\n", database.Name(), duration)
 
 	return err
 }
 
 // ping connects to the database to verify that the server is accessible.
 func pingDB(cmd *cobra.Command, args []string) error {
+	var srv dbServer
+	srv.initFromConfig()
+
+	// Connect to the database server.
+	ctx := context.Background()
+	conn, err := pgx.Connect(ctx, srv.dsn())
+	if err != nil {
+		return err
+	}
+	defer conn.Close(ctx)
+
 	start := time.Now()
-	err := db.Ping()
+	err = conn.Ping(ctx)
 	duration := time.Since(start)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Database connection OK. Server replied in %s.\n", duration)
+	fmt.Printf("Database connection OK. Command completed in %s.\n", duration)
 
 	return err
 }

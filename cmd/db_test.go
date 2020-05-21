@@ -76,9 +76,6 @@ func TestPingDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Open the DB connection pool.
-	openDB(cmd, args)
-
 	// Run pingDB() and verify that no errors occur.
 	err = pingDB(cmd, args)
 	if err != nil {
@@ -86,8 +83,6 @@ func TestPingDB(t *testing.T) {
 	}
 
 	// Do cleanup.
-	// Close the global db connection pool and drop the database to avoid conflicts with other tests.
-	db.Close()
 	err = dropDB(cmd, args)
 	if err != nil {
 		t.Fatal(err)
