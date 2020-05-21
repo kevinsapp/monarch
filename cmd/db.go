@@ -155,12 +155,32 @@ func migrateDB(cmd *cobra.Command, args []string) error {
 	}
 	defer conn.Close(ctx)
 
+	// Timestamp command start.
+	start := time.Now()
+
+	// Migrate the schema.
+	migrateSchema(conn)
+
+	// Timestamp command end.
+	duration := time.Since(start)
+
+	fmt.Printf("Database %q migrated. Command completed in %s.\n", srv.dbName, duration)
+
+	return nil
+}
+
+func migrateSchema(conn *pgx.Conn) error {
+	ctx := context.Background()
+
 	// Begin a transaction.
 	tx, err := conn.Begin(ctx)
 	defer tx.Rollback(ctx)
 
-	// Timestamp command start.
-	start := time.Now()
+	// sql := `SET search_path TO public;`
+	// _, err = tx.Exec(ctx, sql)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// Create the schema_migrations table if it does not exist.
 	sql := `CREATE TABLE IF NOT EXISTS schema_versions (
@@ -177,7 +197,7 @@ func migrateDB(cmd *cobra.Command, args []string) error {
 	// // TODO: load in sql from migration file.
 	migrationFiles, err := ioutil.ReadDir("migrations")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Select only the names of "up" migrations.
@@ -210,12 +230,7 @@ func migrateDB(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Timestamp command end.
-	duration := time.Since(start)
-
-	fmt.Printf("Database %q migrated. Command completed in %s.\n", srv.dbName, duration)
-
-	return nil
+	return err
 }
 
 // ping connects to the database to verify that the server is accessible.
