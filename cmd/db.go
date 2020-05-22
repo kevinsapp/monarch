@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jackc/pgx/pgtype"
 	"github.com/jackc/pgx/v4"
+	"github.com/kevinsapp/monarch/pkg/migration"
 	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -194,18 +194,20 @@ func migrateSchema(conn *pgx.Conn) error {
 	}
 
 	// Determine latest schema version based on schema_versions table.
-	var latestSchemaVersion pgtype.Int8
 	row := conn.QueryRow(ctx, "SELECT max(version) FROM schema_versions")
 	if err != nil {
 		return err
 	}
+
+	var latestSchemaVersion pgtype.Int8
 	err = row.Scan(&latestSchemaVersion)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Current schema version is: %d\n", latestSchemaVersion.Int)
 
 	// Get the list of files in the migrations directory.
-	mfs, err := ioutil.ReadDir("migrations")
+	migrationFiles, err := ioutil.ReadDir("migrations")
 	if err != nil {
 		return err
 	}
@@ -213,27 +215,19 @@ func migrateSchema(conn *pgx.Conn) error {
 	// Select only the migration files with:
 	// a) a suffix of "up.sql", and
 	// b) a version greater than the latest version in schema_migration
-	migrations := make([]sqlt.Migration, 0)
-	var m sqlt.Migration
-	for _, f := range mfs {
+	migrations := make([]migration.Migration, 0)
+	var m migration.Migration
+	for _, f := range migrationFiles {
 		n := f.Name()
-		if strings.HasSuffix(n, "up.sql") {
-			// Extract migration version from filename.
-			fnParts := strings.Split(n, "_")
-			ver, err := strconv.ParseInt(fnParts[0], 10, 64)
-			if err != nil {
-				return err
-			}
+		v, err := migration.ExtractVersionFromFile(n)
+		if err != nil {
+			return err
+		}
 
-			if ver > latestSchemaVersion.Int {
-				sql, err := sqlt.FileAsString("migrations/" + n)
-				if err != nil {
-					return err
-				}
-				m.SetVersion(ver)
-				m.SetSQL(sql)
-				migrations = append(migrations, m)
-			}
+		if v > latestSchemaVersion.Int && strings.HasSuffix(n, "up.sql") {
+			m.SetFromFile("migrations/" + n)
+			migrations = append(migrations, m)
+			fmt.Printf("Staged %q migration version: %d\n", "up", m.Version())
 		}
 	}
 
@@ -241,7 +235,7 @@ func migrateSchema(conn *pgx.Conn) error {
 	tx, err := conn.Begin(ctx)
 	defer tx.Rollback(ctx)
 
-	// Read in and execute the SQL from each migration file.
+	// Execute the SQL from each migration.
 	for _, m := range migrations {
 		// Execute SQL statement from migration.
 		_, err = tx.Exec(ctx, m.SQL())
