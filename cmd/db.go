@@ -181,11 +181,6 @@ func migrateSchema(conn *pgx.Conn) error {
 	// 	return err
 	// }
 
-	type migration struct {
-		sql     string
-		version int64
-	}
-
 	// Create the schema_migrations table if it does not exist.
 	ctx := context.Background()
 	sql := `CREATE TABLE IF NOT EXISTS schema_versions (
@@ -218,8 +213,8 @@ func migrateSchema(conn *pgx.Conn) error {
 	// Select only the migration files with:
 	// a) a suffix of "up.sql", and
 	// b) a version greater than the latest version in schema_migration
-	migrations := make([]migration, 0)
-	var m migration
+	migrations := make([]sqlt.Migration, 0)
+	var m sqlt.Migration
 	for _, f := range mfs {
 		n := f.Name()
 		if strings.HasSuffix(n, "up.sql") {
@@ -235,8 +230,8 @@ func migrateSchema(conn *pgx.Conn) error {
 				if err != nil {
 					return err
 				}
-				m.version = ver
-				m.sql = sql
+				m.SetVersion(ver)
+				m.SetSQL(sql)
 				migrations = append(migrations, m)
 			}
 		}
@@ -249,13 +244,13 @@ func migrateSchema(conn *pgx.Conn) error {
 	// Read in and execute the SQL from each migration file.
 	for _, m := range migrations {
 		// Execute SQL statement from migration.
-		_, err = tx.Exec(ctx, m.sql)
+		_, err = tx.Exec(ctx, m.SQL())
 		if err != nil {
 			return err
 		}
 
 		// Insert new migration version into schema_version table
-		_, err = tx.Exec(ctx, "INSERT INTO schema_versions (version, created_at) VALUES ($1, now());", m.version)
+		_, err = tx.Exec(ctx, "INSERT INTO schema_versions (version, created_at) VALUES ($1, now());", m.Version())
 		if err != nil {
 			return err
 		}
