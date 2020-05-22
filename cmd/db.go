@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
@@ -159,7 +161,10 @@ func migrateDB(cmd *cobra.Command, args []string) error {
 	start := time.Now()
 
 	// Migrate the schema.
-	migrateSchema(conn)
+	err = migrateSchema(conn)
+	if err != nil {
+		return err
+	}
 
 	// Timestamp command end.
 	duration := time.Since(start)
@@ -170,61 +175,93 @@ func migrateDB(cmd *cobra.Command, args []string) error {
 }
 
 func migrateSchema(conn *pgx.Conn) error {
-	ctx := context.Background()
-
-	// Begin a transaction.
-	tx, err := conn.Begin(ctx)
-	defer tx.Rollback(ctx)
-
 	// sql := `SET search_path TO public;`
 	// _, err = tx.Exec(ctx, sql)
 	// if err != nil {
 	// 	return err
 	// }
 
+	type migration struct {
+		sql     string
+		version int64
+	}
+
 	// Create the schema_migrations table if it does not exist.
+	ctx := context.Background()
 	sql := `CREATE TABLE IF NOT EXISTS schema_versions (
-	version character varying NOT NULL,
-	created_at timestamp(6) without time zone NOT NULL,
-	updated_at timestamp(6) without time zone NOT NULL,
-	CONSTRAINT schema_migrations_pkey PRIMARY KEY (version));`
-
-	_, err = tx.Exec(ctx, sql)
+		version bigint NOT NULL,
+		created_at timestamp(6) without time zone NOT NULL,
+		CONSTRAINT schema_migrations_pkey PRIMARY KEY (version)
+	);`
+	_, err := conn.Exec(ctx, sql)
 	if err != nil {
 		return err
 	}
 
-	// // TODO: load in sql from migration file.
-	migrationFiles, err := ioutil.ReadDir("migrations")
+	// Determine latest schema version based on schema_versions table.
+	var latestSchemaVersion pgtype.Int8
+	row := conn.QueryRow(ctx, "SELECT max(version) FROM schema_versions")
+	if err != nil {
+		return err
+	}
+	err = row.Scan(&latestSchemaVersion)
 	if err != nil {
 		return err
 	}
 
-	// Select only the names of "up" migrations.
-	upMigrationFiles := make([]string, 0)
-	for _, file := range migrationFiles {
-		n := file.Name()
+	// Get the list of files in the migrations directory.
+	mfs, err := ioutil.ReadDir("migrations")
+	if err != nil {
+		return err
+	}
+
+	// Select only the migration files with:
+	// a) a suffix of "up.sql", and
+	// b) a version greater than the latest version in schema_migration
+	migrations := make([]migration, 0)
+	var m migration
+	for _, f := range mfs {
+		n := f.Name()
 		if strings.HasSuffix(n, "up.sql") {
-			upMigrationFiles = append(upMigrationFiles, n)
+			// Extract migration version from filename.
+			fnParts := strings.Split(n, "_")
+			ver, err := strconv.ParseInt(fnParts[0], 10, 64)
+			if err != nil {
+				return err
+			}
+
+			if ver > latestSchemaVersion.Int {
+				sql, err := sqlt.FileAsString("migrations/" + n)
+				if err != nil {
+					return err
+				}
+				m.version = ver
+				m.sql = sql
+				migrations = append(migrations, m)
+			}
 		}
 	}
 
-	for _, fn := range upMigrationFiles {
-		sql, _ = sqlt.FileAsString("migrations/" + fn)
-		_, err = tx.Exec(ctx, sql)
+	// Begin a database transaction.
+	tx, err := conn.Begin(ctx)
+	defer tx.Rollback(ctx)
+
+	// Read in and execute the SQL from each migration file.
+	for _, m := range migrations {
+		// Execute SQL statement from migration.
+		_, err = tx.Exec(ctx, m.sql)
 		if err != nil {
 			return err
 		}
 
-		fnParts := strings.Split(fn, "_")
-		version := fnParts[0]
-		sql = fmt.Sprintf("INSERT INTO schema_version (version, created_at, updated_at) VALUES (%s, now(), now());", version)
-		_, err = tx.Exec(ctx, sql)
+		// Insert new migration version into schema_version table
+		_, err = tx.Exec(ctx, "INSERT INTO schema_versions (version, created_at) VALUES ($1, now());", m.version)
 		if err != nil {
 			return err
 		}
 	}
 
+	// All statements must have executed ok, so commit the tranaction.
 	err = tx.Commit(ctx)
 	if err != nil {
 		return err
