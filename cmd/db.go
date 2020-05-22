@@ -160,8 +160,8 @@ func migrateDB(cmd *cobra.Command, args []string) error {
 	// Timestamp command start.
 	start := time.Now()
 
-	// Migrate the schema.
-	err = migrateSchema(conn)
+	// Up migrate the schema.
+	err = upMigrateSchema(conn)
 	if err != nil {
 		return err
 	}
@@ -174,87 +174,28 @@ func migrateDB(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func migrateSchema(conn *pgx.Conn) error {
-	// sql := `SET search_path TO public;`
-	// _, err = tx.Exec(ctx, sql)
-	// if err != nil {
-	// 	return err
-	// }
-
+func upMigrateSchema(conn *pgx.Conn) error {
 	// Create the schema_migrations table if it does not exist.
 	ctx := context.Background()
-	sql := `CREATE TABLE IF NOT EXISTS schema_versions (
-		version bigint NOT NULL,
-		created_at timestamp(6) without time zone NOT NULL,
-		CONSTRAINT schema_migrations_pkey PRIMARY KEY (version)
-	);`
-	_, err := conn.Exec(ctx, sql)
+	err := createSchemaMigrationsTable(ctx, conn)
 	if err != nil {
 		return err
 	}
 
-	// Determine latest schema version based on schema_versions table.
-	row := conn.QueryRow(ctx, "SELECT max(version) FROM schema_versions")
+	// Fetch latest schema version from schema_versions table.
+	ver, err := fetchSchemaVersion(ctx, conn)
 	if err != nil {
 		return err
 	}
 
-	var latestSchemaVersion pgtype.Int8
-	err = row.Scan(&latestSchemaVersion)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Current schema version is: %d\n", latestSchemaVersion.Int)
-
-	// Get the list of files in the migrations directory.
-	migrationFiles, err := ioutil.ReadDir("migrations")
+	// Stage the "up" migrations later than schema version
+	ms, err := stageUpMigrationsLaterThan(ver)
 	if err != nil {
 		return err
 	}
 
-	// Select only the migration files with:
-	// a) a suffix of "up.sql", and
-	// b) a version greater than the latest version in schema_migration
-	migrations := make([]migration.Migration, 0)
-	var m migration.Migration
-	for _, f := range migrationFiles {
-		n := f.Name()
-		v, err := migration.ExtractVersionFromFile(n)
-		if err != nil {
-			return err
-		}
-
-		if v > latestSchemaVersion.Int && strings.HasSuffix(n, "up.sql") {
-			m.SetFromFile("migrations/" + n)
-			migrations = append(migrations, m)
-			fmt.Printf("Staged %q migration version: %d\n", "up", m.Version())
-		}
-	}
-
-	// Begin a database transaction.
-	tx, err := conn.Begin(ctx)
-	defer tx.Rollback(ctx)
-
-	// Execute the SQL from each migration.
-	for _, m := range migrations {
-		// Execute SQL statement from migration.
-		_, err = tx.Exec(ctx, m.SQL())
-		if err != nil {
-			return err
-		}
-
-		// Insert new migration version into schema_version table
-		_, err = tx.Exec(ctx, "INSERT INTO schema_versions (version, created_at) VALUES ($1, now());", m.Version())
-		if err != nil {
-			return err
-		}
-	}
-
-	// All statements must have executed ok, so commit the tranaction.
-	err = tx.Commit(ctx)
-	if err != nil {
-		return err
-	}
+	// Execute migrations.
+	err = execUpMigrations(ctx, conn, ms)
 
 	return err
 }
@@ -331,4 +272,99 @@ func (s *dbServer) initFromConfig() {
 	s.password = viper.GetString("development.password")
 	s.dbName = viper.GetString("development.database")
 	s.sslMode = viper.GetString("development.sslmode")
+}
+
+func createSchemaMigrationsTable(ctx context.Context, conn *pgx.Conn) error {
+	sql := `CREATE TABLE IF NOT EXISTS schema_versions (
+		version bigint NOT NULL,
+		created_at timestamp(6) without time zone NOT NULL,
+		CONSTRAINT schema_migrations_pkey PRIMARY KEY (version)
+	);`
+
+	_, err := conn.Exec(ctx, sql)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+// fetchSchemaVersion fetches latest schema version from schema_versions table.
+func fetchSchemaVersion(ctx context.Context, conn *pgx.Conn) (int64, error) {
+	r := conn.QueryRow(ctx, "SELECT max(version) FROM schema_versions")
+
+	var v pgtype.Int8
+	err := r.Scan(&v)
+	if err != nil {
+		return v.Int, err
+	}
+
+	fmt.Printf("Current schema version is: %d\n", v.Int)
+
+	return v.Int, err
+}
+
+func stageUpMigrationsLaterThan(version int64) ([]migration.Migration, error) {
+	migrations := make([]migration.Migration, 0)
+
+	// Get the list of files in the migrations directory.
+	files, err := ioutil.ReadDir("migrations")
+	if err != nil {
+		return migrations, err
+	}
+
+	var m migration.Migration
+	for _, f := range files {
+		n := f.Name()
+		v, err := migration.ExtractVersionFromFile(n)
+		if err != nil {
+			return migrations, err
+		}
+
+		// Select only the migration files with:
+		// a) a suffix of "up.sql", and
+		// b) a version greater than schemaVersion
+		if v > version && strings.HasSuffix(n, "up.sql") {
+			m.SetFromFile("migrations/" + n)
+			migrations = append(migrations, m)
+			fmt.Printf("Staged %q migration version: %d\n", "up", m.Version())
+		}
+	}
+
+	return migrations, err
+}
+
+func execUpMigrations(ctx context.Context, conn *pgx.Conn, ms []migration.Migration) error {
+	// Begin a database transaction.
+	tx, err := conn.Begin(ctx)
+	defer tx.Rollback(ctx)
+
+	// sql := `SET search_path TO public;`
+	// _, err = tx.Exec(ctx, sql)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// Migrate schema.
+	for _, m := range ms {
+		// Execute SQL statement from migration.
+		_, err = tx.Exec(ctx, m.SQL())
+		if err != nil {
+			return err
+		}
+
+		// Insert migration version into schema_version table
+		_, err = tx.Exec(ctx, "INSERT INTO schema_versions (version, created_at) VALUES ($1, now());", m.Version())
+		if err != nil {
+			return err
+		}
+	}
+
+	// All statements must have executed ok, so commit the tranaction.
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
