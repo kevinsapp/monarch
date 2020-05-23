@@ -12,6 +12,10 @@ const migrationsDir string = "migrations"
 
 func init() {
 	generateCmd.AddCommand(migrationCmd)
+	migrationCmd.AddCommand(addCmd)
+	migrationCmd.AddCommand(createCmd)
+	migrationCmd.AddCommand(dropCmd)
+	migrationCmd.AddCommand(renameCmd)
 }
 
 // migrationCmd ...
@@ -19,6 +23,26 @@ var migrationCmd = &cobra.Command{
 	Use:              "migration",
 	Aliases:          []string{"m"},
 	PersistentPreRun: mkdirMigrations,
+}
+
+// addCmd ...
+var addCmd = &cobra.Command{
+	Use: "add",
+}
+
+// createCmd ...
+var createCmd = &cobra.Command{
+	Use: "create",
+}
+
+// dropCmd ...
+var dropCmd = &cobra.Command{
+	Use: "drop",
+}
+
+// renameCmd ...
+var renameCmd = &cobra.Command{
+	Use: "rename",
 }
 
 // createMigration creates a migration file based on arguments.
