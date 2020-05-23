@@ -1,7 +1,6 @@
 package sqlt
 
 import (
-	"os"
 	"testing"
 )
 
@@ -114,44 +113,6 @@ func TestProcessTmpl(t *testing.T) {
 		// Check that processed SQL matches the expected SQL.
 		if exp != act {
 			t.Errorf("\nwant %s\ngot %s", exp, act)
-		}
-	}
-}
-
-func TestFileAsString(t *testing.T) {
-	fname := "../../test.sql"
-	defer os.Remove(fname)
-
-	cases := []string{
-		testCreateTableSQL,
-		testDropTableSQL,
-		testRenameTableSQL,
-	}
-
-	for _, c := range cases {
-		// Create a file.
-		f, err := os.Create(fname)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		// Write SQL to the file.
-		_, err = f.WriteString(c)
-		if err != nil {
-			t.Fatal(err)
-		}
-		f.Close()
-
-		// Run ProcessTmpl()
-		act, err := FileAsString(fname)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		// Check that processed SQL matches the expected SQL.
-		exp := c
-		if exp != act {
-			t.Errorf("want %s; got %s", exp, act)
 		}
 	}
 }

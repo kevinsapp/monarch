@@ -91,3 +91,32 @@ func TestMkdir(t *testing.T) {
 		t.Errorf("want %q; got %q", expName, actName)
 	}
 }
+
+// Unit test ReadFileAsString
+func TestReadFileAsString(t *testing.T) {
+	ts := time.Now().UnixNano()
+	n := fmt.Sprintf("%d_test.txt", ts)
+	path := tmpTestDir + n
+
+	// Write string to the file (any string would do)
+	str := `Some text to write to a file.`
+	err := CreateAndWriteString(path, str)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(path)
+
+	// Run ReadFileAsString.
+	rstr, err := ReadFileAsString(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify string
+	exp := str
+	act := rstr
+
+	if exp != act {
+		t.Errorf("want %q\n; got %q\n", exp, act)
+	}
+}

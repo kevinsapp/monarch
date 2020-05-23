@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"io/ioutil"
 	"os"
 )
 
@@ -32,4 +33,18 @@ func MkdirP(path string) error {
 	}
 
 	return err
+}
+
+// ReadFileAsString reads in the contents of a SQL file and returns a string.
+func ReadFileAsString(fn string) (string, error) {
+	// Read file contents to buffer
+	var s string
+	b, err := ioutil.ReadFile(fn)
+	if err != nil {
+		return s, err
+	}
+
+	// Return file contents as a string
+	s = string(b)
+	return s, err
 }
