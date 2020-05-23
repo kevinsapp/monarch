@@ -36,20 +36,20 @@ func (m *Migration) SetVersion(ver int64) {
 // SetFromFile sets fields from a migration file.
 func (m *Migration) SetFromFile(path string) error {
 	// Extract version from migration file name.
-	version, err := ExtractVersionFromFile(path)
+	v, err := ExtractVersionFromFile(path)
 	if err != nil {
 		return err
 	}
 
-	// Read in SQL content from migration file.
-	sql, err := FileAsString(path)
+	// Read in content from migration file to a buffer.
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
 
 	// Set fields.
-	m.SetSQL(sql)
-	m.SetVersion(version)
+	m.SetSQL(string(b))
+	m.SetVersion(v)
 
 	return err
 }
@@ -58,23 +58,10 @@ func (m *Migration) SetFromFile(path string) error {
 func ExtractVersionFromFile(path string) (int64, error) {
 	fn := filepath.Base(path)
 	fnParts := strings.Split(fn, "_")
-	version, err := strconv.ParseInt(fnParts[0], 10, 64)
+	ver, err := strconv.ParseInt(fnParts[0], 10, 64)
 	if err != nil {
 		return 0, err
 	}
 
-	return version, err
-}
-
-// FileAsString reads in the contents of a SQL file and returns a string.
-func FileAsString(fn string) (string, error) {
-	// Read file contents to buffer
-	var s string
-	b, err := ioutil.ReadFile(fn)
-	if err != nil {
-		return s, err
-	}
-
-	// Return file contents as a string
-	return string(b), err
+	return ver, err
 }
