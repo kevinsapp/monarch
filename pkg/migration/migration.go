@@ -35,14 +35,14 @@ func (m *Migration) SetVersion(ver int64) {
 
 // SetFromFile sets fields from a migration file.
 func (m *Migration) SetFromFile(path string) error {
-	// Extract version from migration file name.
-	v, err := ExtractVersionFromFile(path)
+	// Read in content from migration file to a buffer.
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
 
-	// Read in content from migration file to a buffer.
-	b, err := ioutil.ReadFile(path)
+	// Extract version from migration file name.
+	v, err := ExtractVersionFromFile(path)
 	if err != nil {
 		return err
 	}

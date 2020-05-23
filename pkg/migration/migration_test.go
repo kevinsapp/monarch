@@ -5,7 +5,28 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/kevinsapp/monarch/pkg/fileutil"
 )
+
+const (
+	tmpDir               string = "tmp"
+	tmpTestMigrationsDir string = "tmp/test/migrations/"
+)
+
+func TestMain(m *testing.M) {
+	// Setup
+	fileutil.MkdirP(tmpTestMigrationsDir)
+
+	// Execute tests.
+	i := m.Run()
+
+	// Teardown
+	os.RemoveAll(tmpDir) // Do cleanup
+
+	// Exit
+	os.Exit(i)
+}
 
 // Unit test Migration.SQL
 func TestMigrationSQL(t *testing.T) {
@@ -33,32 +54,27 @@ func TestMigrationVersion(t *testing.T) {
 	}
 }
 
-// Unit test Migration.SQL
+// Unit test Migration.SetFromFile
 func TestMigrationSetFromFile(t *testing.T) {
 	m := Migration{}
 	ts := time.Now().UnixNano()
 	n := fmt.Sprintf("%d_create_table_users_up.sql", ts)
-
-	// Create migration file.
-	f, err := os.Create(n)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(n) // Do cleanup.
+	path := tmpTestMigrationsDir + n
 
 	// Write SQL to the file (any string would do)
-	s := `CREATE TABLE users (
+	sql := `CREATE TABLE users (
 		id bigint NOT NULL,
 		created_at timestamp(6) without time zone NOT NULL,
 		updated_at timestamp(6) without time zone NOT NULL
 	);`
-	_, err = f.WriteString(s)
+	err := fileutil.CreateAndWriteString(path, sql)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer os.Remove(path)
 
 	// Run SetFromFile method.
-	err = m.SetFromFile(n)
+	err = m.SetFromFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,9 +87,36 @@ func TestMigrationSetFromFile(t *testing.T) {
 	}
 
 	// Verify SQL.
-	exps := s
+	exps := sql
 	acts := m.SQL() // Get
 	if exps != acts {
-		t.Errorf("want %q; got %q", exps, acts)
+		t.Errorf("want %q\n; got %q\n", exps, acts)
+	}
+}
+
+// Unit test ExtractVersionFromFile
+func TestExtractVersionFromFile(t *testing.T) {
+	ts := time.Now().UnixNano()
+	n := fmt.Sprintf("%d_create_table_users_up.sql", ts)
+	path := tmpTestMigrationsDir + n
+
+	// Create migration file.
+	_, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(path)
+
+	// Run ExtractVersionFromFile
+	v, err := ExtractVersionFromFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify version.
+	exp := ts
+	act := v
+	if exp != act {
+		t.Errorf("want %d; got %d", exp, act)
 	}
 }

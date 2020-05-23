@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/kevinsapp/monarch/pkg/fileutil"
 	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 )
@@ -46,41 +46,31 @@ var renameCmd = &cobra.Command{
 }
 
 // createMigration creates a migration file based on arguments.
-func createMigration(fname, tmpl string, data interface{}) (*os.File, error) {
-	// Create a migration file.
-	f, err := os.Create(fname)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
+func createMigration(path, tmpl string, data interface{}) error {
 	// Process SQL template
-	s, err := sqlt.ProcessTmpl(data, tmpl)
+	sql, err := sqlt.ProcessTmpl(data, tmpl)
 	if err != nil {
-		return f, err
+		return err
 	}
 
-	// Write SQL to the file.
-	_, err = f.WriteString(s)
+	// Create migration file.
+	err = fileutil.CreateAndWriteString(path, sql)
 	if err != nil {
-		return f, err
+		return err
 	}
 
-	fmt.Printf("Migration file created: %s.\n", fname)
+	fmt.Printf("Migration file created: %s.\n", path)
 
-	return f, err
+	return err
 }
 
 // mkdirMigrations creates a directory called `migrations` in the current
 // working directory. If the `migrations` directory already exists,
 // mkdirMigations does nothing.
 func mkdirMigrations(cmd *cobra.Command, args []string) {
-	const (
-		dn             = "migrations" // directory name
-		fm os.FileMode = 0755         // 0755 Unix file permissions
-	)
-	err := os.MkdirAll(dn, fm)
+	path := "migrations"
+	err := fileutil.MkdirP(path)
 	if err != nil {
-		fmt.Printf("Error creating %s directory: %s\n", dn, err)
+		fmt.Printf("Error creating directory %q: %s\n", path, err)
 	}
 }

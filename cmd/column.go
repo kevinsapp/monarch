@@ -72,14 +72,14 @@ func addColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_add_columns_to_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sqlt.AddColumnTmpl, &td)
+	err := createMigration(fn, sqlt.AddColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
 
 	// Create a "down" migration file.
 	fn = fmt.Sprintf("migrations/%d_add_columns_to_%s_down.sql", timestamp, td.Name())
-	_, err = createMigration(fn, sqlt.DropColumnTmpl, &td)
+	err = createMigration(fn, sqlt.DropColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func dropColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_drop_columns_from_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sqlt.DropColumnTmpl, &td)
+	err := createMigration(fn, sqlt.DropColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_rename_columns_in_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sqlt.RenameColumnTmpl, &td)
+	err := createMigration(fn, sqlt.RenameColumnTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create a "down" migration file.
 	fn = fmt.Sprintf("migrations/%d_rename_columns_in_%s_down.sql", timestamp, td.Name())
-	_, err = createMigration(fn, sqlt.RenameColumnTmpl, &td)
+	err = createMigration(fn, sqlt.RenameColumnTmpl, &td)
 	if err != nil {
 		return err
 	}

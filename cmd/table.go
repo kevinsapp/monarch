@@ -76,14 +76,14 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_create_table_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sqlt.CreateTableTmpl, &td)
+	err := createMigration(fn, sqlt.CreateTableTmpl, &td)
 	if err != nil {
 		return err
 	}
 
 	// Create a "down" migration file.
 	fn = fmt.Sprintf("migrations/%d_create_table_%s_down.sql", timestamp, td.Name())
-	_, err = createMigration(fn, sqlt.DropTableTmpl, &td)
+	err = createMigration(fn, sqlt.DropTableTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func dropTableMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_drop_table_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sqlt.DropTableTmpl, &td)
+	err := createMigration(fn, sqlt.DropTableTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func renameTableMigrations(cmd *cobra.Command, args []string) error {
 
 	// Create an "up" migration file.
 	fn := fmt.Sprintf("migrations/%d_rename_table_%s_up.sql", timestamp, td.Name())
-	_, err := createMigration(fn, sqlt.RenameTableTmpl, &td)
+	err := createMigration(fn, sqlt.RenameTableTmpl, &td)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func renameTableMigrations(cmd *cobra.Command, args []string) error {
 	fn = fmt.Sprintf("migrations/%d_rename_table_%s_down.sql", timestamp, td.Name())
 	td.SetName(args[1])    // swap name and newname
 	td.SetNewName(args[0]) // swap name and newname
-	_, err = createMigration(fn, sqlt.RenameTableTmpl, &td)
+	err = createMigration(fn, sqlt.RenameTableTmpl, &td)
 	if err != nil {
 		return err
 	}
