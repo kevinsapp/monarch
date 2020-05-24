@@ -30,11 +30,11 @@ func TestMain(m *testing.M) {
 // Unit test CreateAndWriteString
 func TestCreateAndWriteString(t *testing.T) {
 	ts := time.Now().UnixNano()
-	n := fmt.Sprintf("%d_test.txt", ts)
-	path := tmpTestDir + n
+	fn := fmt.Sprintf("%d_test.txt", ts) // filename
+	path := tmpTestDir + fn
 
-	// Write string to the file (any string would do)
-	str := `Some text to write to a file.`
+	// Write string to the file (any string will do)
+	str := "Some text to write to a file."
 	err := CreateAndWriteString(path, str)
 	if err != nil {
 		t.Fatal(err)
@@ -59,7 +59,7 @@ func TestCreateAndWriteString(t *testing.T) {
 // Unit test Mkdir
 func TestMkdir(t *testing.T) {
 	// Call Mkdir to create a directory.
-	dn := `test_directory`
+	dn := "test_directory" // directory name
 	path := tmpTestDir + dn
 	err := MkdirP(path)
 	if err != nil {
@@ -98,8 +98,8 @@ func TestReadFileAsString(t *testing.T) {
 	n := fmt.Sprintf("%d_test.txt", ts)
 	path := tmpTestDir + n
 
-	// Write string to the file (any string would do)
-	str := `Some text to write to a file.`
+	// Write string to the file (any string will do)
+	str := "Some text to write to a file."
 	err := CreateAndWriteString(path, str)
 	if err != nil {
 		t.Fatal(err)
