@@ -23,7 +23,7 @@ func CreateAndWriteString(path, str string) error {
 	return err
 }
 
-// MkdirP creates a directory at path relative to the current working directory
+// MkdirP creates a directory at "path" relative to the current working directory
 // and makes parents as necessary. If the directory already exists, Mkdir does nothing.
 func MkdirP(path string) error {
 	const mode os.FileMode = 0755 // 0755 Unix file permissions
