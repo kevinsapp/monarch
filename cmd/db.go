@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/pgtype"
 	"github.com/jackc/pgx/v4"
+	"github.com/kevinsapp/monarch/pkg/fileutil"
 	"github.com/kevinsapp/monarch/pkg/migration"
 	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
@@ -316,7 +317,7 @@ func stageUpMigrationsLaterThan(version int64) ([]migration.Migration, error) {
 	var m migration.Migration
 	for _, f := range files {
 		n := f.Name()
-		v, err := migration.ExtractVersionFromFile(n)
+		v, err := fileutil.ExtractVersionFromFile(n)
 		if err != nil {
 			return migrations, err
 		}

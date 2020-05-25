@@ -108,7 +108,7 @@ func TestExtractVersionFromFile(t *testing.T) {
 	defer os.Remove(path)
 
 	// Run ExtractVersionFromFile
-	v, err := ExtractVersionFromFile(path)
+	v, err := fileutil.ExtractVersionFromFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}

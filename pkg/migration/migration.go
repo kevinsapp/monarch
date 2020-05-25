@@ -1,10 +1,7 @@
 package migration
 
 import (
-	"io/ioutil"
-	"path/filepath"
-	"strconv"
-	"strings"
+	"github.com/kevinsapp/monarch/pkg/fileutil"
 )
 
 // Migration ...
@@ -36,32 +33,20 @@ func (m *Migration) SetVersion(ver int64) {
 // SetFromFile sets fields from a migration file.
 func (m *Migration) SetFromFile(path string) error {
 	// Read in content from migration file to a buffer.
-	b, err := ioutil.ReadFile(path)
+	s, err := fileutil.ReadFileAsString(path)
 	if err != nil {
 		return err
 	}
 
 	// Extract version from migration file name.
-	v, err := ExtractVersionFromFile(path)
+	v, err := fileutil.ExtractVersionFromFile(path)
 	if err != nil {
 		return err
 	}
 
 	// Set fields.
-	m.SetSQL(string(b))
+	m.SetSQL(s)
 	m.SetVersion(v)
 
 	return err
-}
-
-// ExtractVersionFromFile extracts version from a migration file name.
-func ExtractVersionFromFile(path string) (int64, error) {
-	fn := filepath.Base(path)
-	fnParts := strings.Split(fn, "_")
-	ver, err := strconv.ParseInt(fnParts[0], 10, 64)
-	if err != nil {
-		return 0, err
-	}
-
-	return ver, err
 }

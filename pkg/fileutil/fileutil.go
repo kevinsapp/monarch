@@ -3,6 +3,9 @@ package fileutil
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 // CreateAndWriteString creates or truncates the named file. If the file
@@ -21,6 +24,18 @@ func CreateAndWriteString(path, str string) error {
 	}
 
 	return err
+}
+
+// ExtractVersionFromFile extracts version from a migration file name.
+func ExtractVersionFromFile(path string) (int64, error) {
+	fn := filepath.Base(path)
+	fnParts := strings.Split(fn, "_")
+	ver, err := strconv.ParseInt(fnParts[0], 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return ver, err
 }
 
 // MkdirP creates a directory at "path" relative to the current working directory
