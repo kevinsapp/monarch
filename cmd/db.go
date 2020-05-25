@@ -3,15 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"strings"
 	"time"
 
-	"github.com/jackc/pgx/pgtype"
 	"github.com/jackc/pgx/v4"
-	"github.com/kevinsapp/monarch/pkg/fileutil"
-	"github.com/kevinsapp/monarch/pkg/migration"
 	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,7 +16,6 @@ func init() {
 	rootCmd.AddCommand(dbCmd)
 	dbCmd.AddCommand(createDBCmd)
 	dbCmd.AddCommand(dropDBCmd)
-	dbCmd.AddCommand(migrateDBCmd)
 	dbCmd.AddCommand(pingDBCmd)
 	dbCmd.AddCommand(resetDBCmd)
 }
@@ -44,13 +38,6 @@ var dropDBCmd = &cobra.Command{
 	Use:   "drop",
 	Short: `Drop a database with the name specificed by the "database" attribute in the config file.`,
 	RunE:  dropDB,
-}
-
-// migrateCmd ...
-var migrateDBCmd = &cobra.Command{
-	Use:   "migrate",
-	Short: `Migrate a database.`,
-	RunE:  migrateDB,
 }
 
 // pingDBCmd ...
@@ -146,61 +133,6 @@ func dropDB(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-func migrateDB(cmd *cobra.Command, args []string) error {
-	var srv dbServer
-	srv.initFromConfig()
-
-	// Connect to the database server.
-	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, srv.dsn())
-	if err != nil {
-		return err
-	}
-	defer conn.Close(ctx)
-
-	// Timestamp command start.
-	start := time.Now()
-
-	// Up migrate the schema.
-	err = upMigrateSchema(conn)
-	if err != nil {
-		return err
-	}
-
-	// Timestamp command end.
-	duration := time.Since(start)
-
-	fmt.Printf("Database %q migrated. Command completed in %s.\n", srv.dbName, duration)
-
-	return nil
-}
-
-func upMigrateSchema(conn *pgx.Conn) error {
-	// Create the schema_migrations table if it does not exist.
-	ctx := context.Background()
-	err := createSchemaMigrationsTable(ctx, conn)
-	if err != nil {
-		return err
-	}
-
-	// Fetch latest schema version from schema_versions table.
-	ver, err := fetchSchemaVersion(ctx, conn)
-	if err != nil {
-		return err
-	}
-
-	// Stage the "up" migrations later than schema version
-	ms, err := stageUpMigrationsLaterThan(ver)
-	if err != nil {
-		return err
-	}
-
-	// Execute migrations.
-	err = execUpMigrations(ctx, conn, ms)
-
-	return err
-}
-
 // ping connects to the database to verify that the server is accessible.
 func pingDB(cmd *cobra.Command, args []string) error {
 	var srv dbServer
@@ -273,99 +205,4 @@ func (s *dbServer) initFromConfig() {
 	s.password = viper.GetString("development.password")
 	s.dbName = viper.GetString("development.database")
 	s.sslMode = viper.GetString("development.sslmode")
-}
-
-func createSchemaMigrationsTable(ctx context.Context, conn *pgx.Conn) error {
-	sql := `CREATE TABLE IF NOT EXISTS schema_versions (
-		version bigint NOT NULL,
-		created_at timestamp(6) without time zone NOT NULL,
-		CONSTRAINT schema_migrations_pkey PRIMARY KEY (version)
-	);`
-
-	_, err := conn.Exec(ctx, sql)
-	if err != nil {
-		return err
-	}
-
-	return err
-}
-
-// fetchSchemaVersion fetches latest schema version from schema_versions table.
-func fetchSchemaVersion(ctx context.Context, conn *pgx.Conn) (int64, error) {
-	r := conn.QueryRow(ctx, "SELECT max(version) FROM schema_versions")
-
-	var v pgtype.Int8
-	err := r.Scan(&v)
-	if err != nil {
-		return v.Int, err
-	}
-
-	fmt.Printf("Current schema version is: %d\n", v.Int)
-
-	return v.Int, err
-}
-
-func stageUpMigrationsLaterThan(version int64) ([]migration.Migration, error) {
-	migrations := make([]migration.Migration, 0)
-
-	// Get the list of files in the migrations directory.
-	files, err := ioutil.ReadDir("migrations")
-	if err != nil {
-		return migrations, err
-	}
-
-	var m migration.Migration
-	for _, f := range files {
-		n := f.Name()
-		v, err := fileutil.ExtractVersionFromFile(n)
-		if err != nil {
-			return migrations, err
-		}
-
-		// Select only the migration files with:
-		// a) a suffix of "up.sql", and
-		// b) a version greater than schemaVersion
-		if v > version && strings.HasSuffix(n, "up.sql") {
-			m.SetFromFile("migrations/" + n)
-			migrations = append(migrations, m)
-			fmt.Printf("Staged %q migration version: %d\n", "up", m.Version())
-		}
-	}
-
-	return migrations, err
-}
-
-func execUpMigrations(ctx context.Context, conn *pgx.Conn, ms []migration.Migration) error {
-	// Begin a database transaction.
-	tx, err := conn.Begin(ctx)
-	defer tx.Rollback(ctx)
-
-	// sql := `SET search_path TO public;`
-	// _, err = tx.Exec(ctx, sql)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// Migrate schema.
-	for _, m := range ms {
-		// Execute SQL statement from migration.
-		_, err = tx.Exec(ctx, m.SQL())
-		if err != nil {
-			return err
-		}
-
-		// Insert migration version into schema_version table
-		_, err = tx.Exec(ctx, "INSERT INTO schema_versions (version, created_at) VALUES ($1, now());", m.Version())
-		if err != nil {
-			return err
-		}
-	}
-
-	// All statements must have executed ok, so commit the tranaction.
-	err = tx.Commit(ctx)
-	if err != nil {
-		return err
-	}
-
-	return err
 }

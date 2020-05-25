@@ -1,6 +1,10 @@
 package migration
 
 import (
+	"fmt"
+	"io/ioutil"
+	"strings"
+
 	"github.com/kevinsapp/monarch/pkg/fileutil"
 )
 
@@ -49,4 +53,35 @@ func (m *Migration) SetFromFile(path string) error {
 	m.SetVersion(v)
 
 	return err
+}
+
+// LoadAllLaterThan ...
+func LoadAllLaterThan(version int64, dirname string) ([]Migration, error) {
+	migrations := make([]Migration, 0)
+
+	// Get the list of files in the directory specificed by path.
+	files, err := ioutil.ReadDir(dirname)
+	if err != nil {
+		return migrations, err
+	}
+
+	var m Migration
+	for _, f := range files {
+		n := f.Name()
+		v, err := fileutil.ExtractVersionFromFile(n)
+		if err != nil {
+			return migrations, err
+		}
+
+		// Select only the migration files with:
+		// a) a suffix of "up.sql", and
+		// b) a version greater than schemaVersion
+		if v > version && strings.HasSuffix(n, "up.sql") {
+			m.SetFromFile(dirname + "/" + n)
+			migrations = append(migrations, m)
+			fmt.Printf("Staged %q migration version: %d\n", "up", m.Version())
+		}
+	}
+
+	return migrations, err
 }
