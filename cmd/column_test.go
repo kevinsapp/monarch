@@ -14,33 +14,21 @@ import (
 
 // Test data - expected SQL
 const (
-	testAddColumnsSQL string = `-- Table: users
-
-ALTER TABLE users
+	testAddColumnsSQL string = `ALTER TABLE users
 ADD COLUMN given_name varchar
-ADD COLUMN family_name varchar;
-`
+ADD COLUMN family_name varchar;`
 
-	testDropColumnsSQL string = `-- Table: users
-
-ALTER TABLE users
+	testDropColumnsSQL string = `ALTER TABLE users
 DROP COLUMN given_name
-DROP COLUMN family_name;
-`
+DROP COLUMN family_name;`
 
-	testRenameColumnsUpSQL string = `-- Table: users
-
-ALTER TABLE users
+	testRenameColumnsUpSQL string = `ALTER TABLE users
 RENAME COLUMN given_name TO first_name
-RENAME COLUMN family_name TO last_name;
-`
+RENAME COLUMN family_name TO last_name;`
 
-	testRenameColumnsDownSQL string = `-- Table: users
-
-ALTER TABLE users
+	testRenameColumnsDownSQL string = `ALTER TABLE users
 RENAME COLUMN first_name TO given_name
-RENAME COLUMN last_name TO family_name;
-`
+RENAME COLUMN last_name TO family_name;`
 )
 
 // Unit test addColumnMigrations()
@@ -108,26 +96,12 @@ func TestDropColumnMigrations(t *testing.T) {
 		t.Errorf("wrong number of files created: want 1; got %d", l)
 	}
 
-	// Check that the up migration file has the correct name.
-	exp := `_drop_columns_from_users_up.sql`
-	matched, _ := regexp.MatchString(exp, files[0].Name())
-	if !matched {
-		t.Errorf("up migration file with name %s not found", exp)
-	}
-
-	// Check that the up migration file has the expected content.
-	exp = testDropColumnsSQL
-	act, err := fileutil.ReadFileAsString(migrationsDir + "/" + files[0].Name())
+	// Verify that the file can be read in to a migration object.
+	path := fmt.Sprintf("%s/%s", migrationsDir, files[0].Name())
+	m := new(migration.Migration)
+	err = m.ReadFromFile(path)
 	if err != nil {
-		t.Fatal(err)
-	}
-
-	if exp != act {
-		t.Errorf("\nwant %s\ngot %s\n", exp, act)
-	}
-
-	if exp != act {
-		t.Errorf("want %s\n; got %s\n", exp, act)
+		t.Error(err)
 	}
 }
 
