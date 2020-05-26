@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kevinsapp/monarch/pkg/migration"
 	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 )
@@ -49,15 +50,16 @@ and a companion "down" migration file to rename the column from [newName] to [na
 // addColumnMigrations creates an "up" migration file to add a column to
 // a table and a "down" migration file to remove that column.
 func addColumnMigrations(cmd *cobra.Command, args []string) error {
-	// Caller should supply a table name as the first argument.
+	// Caller should supply a table name as the first argument and a column
+	// name:type pair as the second argument.
 	if len(args) < 2 {
 		return errors.New("requires tableName and colName:type arguments")
 	}
 
-	// Set timestamp and table data.
-	timestamp := time.Now().UnixNano()
-	td := sqlt.Table{}
-	td.SetName(args[0])
+	// Set table data.
+	tableName := args[0]
+	t := new(sqlt.Table)
+	t.SetName(tableName)
 
 	// Add columns to table object
 	for _, v := range args[1:] {
@@ -67,22 +69,30 @@ func addColumnMigrations(cmd *cobra.Command, args []string) error {
 		col.SetName(nameType[0])
 		col.SetType(nameType[1])
 
-		td.AddColumn(col)
+		t.AddColumn(col)
 	}
 
-	// Create an "up" migration file.
-	fn := fmt.Sprintf("migrations/%d_add_columns_to_%s_up.sql", timestamp, td.Name())
-	err := createMigration(fn, sqlt.AddColumnTmpl, &td)
+	// Process SQL template for "up" migration.
+	upSQL, err := sqlt.ProcessTmpl(t, sqlt.AddColumnTmpl)
 	if err != nil {
 		return err
 	}
 
-	// Create a "down" migration file.
-	fn = fmt.Sprintf("migrations/%d_add_columns_to_%s_down.sql", timestamp, td.Name())
-	err = createMigration(fn, sqlt.DropColumnTmpl, &td)
+	// Process SQL template for "down" migration.
+	downSQL, err := sqlt.ProcessTmpl(t, sqlt.DropColumnTmpl)
 	if err != nil {
 		return err
 	}
+
+	// Configure a migration object.
+	m := new(migration.Migration)
+	m.SetName("AddColumnsTo_" + tableName)
+	m.SetUpSQL(upSQL)
+	m.SetDownSQL(downSQL)
+	m.SetVersion(time.Now().UnixNano())
+
+	// Write migration file.
+	m.WriteToFile("migrations")
 
 	return err
 }
