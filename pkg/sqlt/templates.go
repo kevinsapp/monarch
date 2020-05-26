@@ -25,9 +25,7 @@ DROP DATABASE IF EXISTS {{.Name}};
 // SQL templates for TABLE operaions
 const (
 	// CreateTableTmpl is a SQL template for creating tables.
-	CreateTableTmpl string = `-- Table: {{.Name}}
-
-CREATE TABLE {{.Name}} (
+	CreateTableTmpl string = `CREATE TABLE {{.Name}} (
 	id bigint NOT NULL,
 	{{range .Columns}}{{.Name}} {{.Type}},
 	{{end}}
@@ -42,10 +40,7 @@ CREATE TABLE {{.Name}} (
 );
 `
 	// DropTableTmpl is a SQL template for dropping tables.
-	DropTableTmpl string = `-- Table: {{.Name}}
-
-DROP TABLE {{.Name}};
-`
+	DropTableTmpl string = `DROP TABLE {{.Name}};`
 
 	// RenameTableTmpl is a SQL template for renaming tables.
 	RenameTableTmpl string = `-- Table: {{.Name}}

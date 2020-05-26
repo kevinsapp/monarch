@@ -6,9 +6,7 @@ import (
 
 // Test data - expected SQL
 const (
-	testCreateTableSQL string = `-- Table: users
-
-CREATE TABLE users (
+	testCreateTableSQL string = `CREATE TABLE users (
 	id bigint NOT NULL,
 	
 
@@ -21,10 +19,7 @@ CREATE TABLE users (
 	CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 `
-	testDropTableSQL string = `-- Table: users
-
-DROP TABLE users;
-`
+	testDropTableSQL string = `DROP TABLE users;`
 
 	testRenameTableSQL string = `-- Table: users
 
