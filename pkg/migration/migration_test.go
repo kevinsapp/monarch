@@ -1,7 +1,6 @@
 package migration
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -28,22 +27,82 @@ func TestMain(m *testing.M) {
 	os.Exit(i)
 }
 
-// Unit test Migration.SQL
-func TestMigrationSQL(t *testing.T) {
-	m := Migration{}
+// Unit test Migration.Name
+func TestMigrationName(t *testing.T) {
+	m := new(Migration)
+	s := "CreateTableUsers"
+	exp := "create_table_users"
+
+	m.SetName(s)    // Set
+	act := m.Name() // Get
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+}
+
+// Unit test Migration.LeadingComment
+func TestMigrationLeadingComment(t *testing.T) {
+	m := new(Migration)
+	s := "This is a comment"
+	exp := "-- This is a comment"
+
+	m.SetLeadingComment(s)    // Set
+	act := m.LeadingComment() // Get
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+}
+
+// Unit test Migration.UpSQL
+func TestMigrationUpSQL(t *testing.T) {
+	m := new(Migration)
 	s := "CREATE TABLE users;"
 
 	exp := s
-	m.SetSQL(s)    // Set
-	act := m.SQL() // Get
+	m.SetUpSQL(s)    // Set
+	act := m.UpSQL() // Get
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+}
+
+// Unit test Migration.UpSQL
+func TestMigrationDownSQL(t *testing.T) {
+	m := new(Migration)
+	s := "DROP TABLE users;"
+
+	exp := s
+	m.SetDownSQL(s)    // Set
+	act := m.DownSQL() // Get
 	if exp != act {
 		t.Errorf("want %q; got %q", exp, act)
 	}
 }
 
 // Unit test Migration.SQL
+func TestMigrationSQL(t *testing.T) {
+	m := new(Migration)
+	up := "CREATE TABLE users;"
+	down := "DROP TABLE users;"
+
+	exp := `CREATE TABLE users;
+
+-- MIGRATION DELIMITER (DO NOT DELETE THIS COMMENT) --
+
+DROP TABLE users;`
+
+	m.SetUpSQL(up)
+	m.SetDownSQL(down)
+
+	act := m.SQL() // Get
+	if exp != act {
+		t.Errorf("want %q\n; got %q\n", exp, act)
+	}
+}
+
+// Unit test Migration.Version
 func TestMigrationVersion(t *testing.T) {
-	m := Migration{}
+	m := new(Migration)
 	var i int64 = 1234567890
 
 	exp := i
@@ -54,69 +113,142 @@ func TestMigrationVersion(t *testing.T) {
 	}
 }
 
-// Unit test Migration.SetFromFile
-func TestMigrationSetFromFile(t *testing.T) {
-	m := Migration{}
-	ts := time.Now().UnixNano()
-	n := fmt.Sprintf("%d_create_table_users_up.sql", ts)
-	path := tmpTestMigrationsDir + n
+// Unit test Migration.WriteToFile()
+func TestMigrationWriteToFile(t *testing.T) {
+	m := new(Migration)
+	m.SetName("CreateTableUsers")
+	m.SetUpSQL("CREATE TABLE users;")
+	m.SetDownSQL("DROP TABLE users;")
+	m.SetVersion(time.Now().UnixNano())
 
-	// Write SQL to the file (any string would do)
-	sql := `CREATE TABLE users (
-		id bigint NOT NULL,
-		created_at timestamp(6) without time zone NOT NULL,
-		updated_at timestamp(6) without time zone NOT NULL
-	);`
-	err := fileutil.CreateAndWriteString(path, sql)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(path)
-
-	// Run SetFromFile method.
-	err = m.SetFromFile(path)
+	fn, err := m.WriteToFile(tmpTestMigrationsDir)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Verify version.
-	expv := ts
-	actv := m.Version() // Get
+	exp := m.SQL()
+	act, err := fileutil.ReadFileAsString(fn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if exp != act {
+		t.Errorf("want %q\n; got %q\n", exp, act)
+	}
+}
+
+// Unit test Migration.ReadFromFile()
+func TestMigrationReadFromFile(t *testing.T) {
+	// Allocate a migration and write it to a file.
+	m := new(Migration)
+	m.SetName("CreateTableUsers")
+	m.SetUpSQL("CREATE TABLE users;")
+	m.SetDownSQL("DROP TABLE users;")
+	m.SetVersion(time.Now().UnixNano())
+
+	fn, err := m.WriteToFile(tmpTestMigrationsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Allocate a new migration and read in from file.
+	rm := new(Migration)
+	err = rm.ReadFromFile(fn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify name
+	exp := m.Name()
+	act := rm.Name()
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+
+	// Verify upSQL
+	exp = m.UpSQL()
+	act = rm.UpSQL()
+	if exp != act {
+		t.Errorf("want %q\n; got %q\n", exp, act)
+	}
+
+	// Verify downSQL
+	exp = m.DownSQL()
+	act = rm.DownSQL()
+	if exp != act {
+		t.Errorf("want %q\n; got %q\n", exp, act)
+	}
+
+	expv := m.Version()
+	actv := rm.Version()
 	if expv != actv {
 		t.Errorf("want %d; got %d", expv, actv)
 	}
-
-	// Verify SQL.
-	exps := sql
-	acts := m.SQL() // Get
-	if exps != acts {
-		t.Errorf("want %q\n; got %q\n", exps, acts)
-	}
 }
 
-// Unit test ExtractVersionFromFile
-func TestExtractVersionFromFile(t *testing.T) {
-	ts := time.Now().UnixNano()
-	n := fmt.Sprintf("%d_create_table_users_up.sql", ts)
-	path := tmpTestMigrationsDir + n
+// // Unit test Migration.SetFromFile
+// func TestMigrationSetFromFile(t *testing.T) {
+// 	m := new(Migration)
+// 	ts := time.Now().UnixNano()
+// 	n := fmt.Sprintf("%d_create_table_users_up.sql", ts)
+// 	path := tmpTestMigrationsDir + n
 
-	// Create migration file.
-	_, err := os.Create(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(path)
+// 	// Write SQL to the file (any string would do)
+// 	sql := `CREATE TABLE users (
+// 		id bigint NOT NULL,
+// 		created_at timestamp(6) without time zone NOT NULL,
+// 		updated_at timestamp(6) without time zone NOT NULL
+// 	);`
+// 	err := fileutil.CreateAndWriteString(path, sql)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer os.Remove(path)
 
-	// Run ExtractVersionFromFile
-	v, err := fileutil.ExtractVersionFromFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
+// 	// Run SetFromFile method.
+// 	err = m.SetFromFile(path)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	// Verify version.
-	exp := ts
-	act := v
-	if exp != act {
-		t.Errorf("want %d; got %d", exp, act)
-	}
-}
+// 	// Verify version.
+// 	expv := ts
+// 	actv := m.Version() // Get
+// 	if expv != actv {
+// 		t.Errorf("want %d; got %d", expv, actv)
+// 	}
+
+// 	// Verify SQL.
+// 	exps := sql
+// 	acts := m.SQL() // Get
+// 	if exps != acts {
+// 		t.Errorf("want %q\n; got %q\n", exps, acts)
+// 	}
+// }
+
+// // Unit test ExtractVersionFromFile
+// func TestExtractVersionFromFile(t *testing.T) {
+// 	ts := time.Now().UnixNano()
+// 	n := fmt.Sprintf("%d_create_table_users_up.sql", ts)
+// 	path := tmpTestMigrationsDir + n
+
+// 	// Create migration file.
+// 	_, err := os.Create(path)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer os.Remove(path)
+
+// 	// Run ExtractVersionFromFile
+// 	v, err := fileutil.ExtractVersionFromFile(path)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+
+// 	// Verify version.
+// 	exp := ts
+// 	act := v
+// 	if exp != act {
+// 		t.Errorf("want %d; got %d", exp, act)
+// 	}
+// }
