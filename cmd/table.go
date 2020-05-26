@@ -93,7 +93,10 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 	m.SetVersion(time.Now().UnixNano())
 
 	// Write migration file.
-	m.WriteToFile("migrations")
+	_, err = m.WriteToFile(migrationsDir)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -130,7 +133,10 @@ func dropTableMigrations(cmd *cobra.Command, args []string) error {
 	m.SetVersion(time.Now().UnixNano())
 
 	// Write migration file.
-	m.WriteToFile("migrations")
+	_, err = m.WriteToFile(migrationsDir)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -173,7 +179,10 @@ func renameTableMigrations(cmd *cobra.Command, args []string) error {
 	m.SetVersion(time.Now().UnixNano())
 
 	// Write migration file.
-	m.WriteToFile("migrations")
+	_, err = m.WriteToFile(migrationsDir)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
