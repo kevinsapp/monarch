@@ -43,10 +43,7 @@ const (
 	DropTableTmpl string = `DROP TABLE {{.Name}};`
 
 	// RenameTableTmpl is a SQL template for renaming tables.
-	RenameTableTmpl string = `-- Table: {{.Name}}
-
-ALTER TABLE {{.Name}} RENAME TO {{.NewName}};
-`
+	RenameTableTmpl string = `ALTER TABLE {{.Name}} RENAME TO {{.NewName}};`
 
 	// AddColumnTmpl is a SQL template for adding columns to a table.
 	AddColumnTmpl string = `-- Table: {{.Name}}

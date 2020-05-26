@@ -21,10 +21,8 @@ const (
 `
 	testDropTableSQL string = `DROP TABLE users;`
 
-	testRenameTableSQL string = `-- Table: users
+	testRenameTableSQL string = `ALTER TABLE users RENAME TO people;`
 
-ALTER TABLE users RENAME TO people;
-`
 	testAddColumnSQL string = `-- Table: users
 
 ALTER TABLE users
