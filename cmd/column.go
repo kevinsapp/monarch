@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -105,7 +104,7 @@ func dropColumnMigrations(cmd *cobra.Command, args []string) error {
 		return errors.New("requires tableName and colName arguments")
 	}
 
-	// Set timestamp and table data.
+	// Set table data.
 	tableName := args[0]
 	t := new(sqlt.Table)
 	t.SetName(tableName)
@@ -152,10 +151,10 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 		return errors.New("requires tableName and colName:newName arguments")
 	}
 
-	// Set timestamp and table data.
-	timestamp := time.Now().UnixNano()
-	td := sqlt.Table{}
-	td.SetName(args[0])
+	// Set table data.
+	tableName := args[0]
+	t := new(sqlt.Table)
+	t.SetName(tableName)
 
 	// Add columns to table object
 	for _, v := range args[1:] {
@@ -165,18 +164,19 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 		col.SetName(names[0])
 		col.SetNewName(names[1])
 
-		td.AddColumn(col)
+		t.AddColumn(col)
 	}
 
-	// Create an "up" migration file.
-	fn := fmt.Sprintf("migrations/%d_rename_columns_in_%s_up.sql", timestamp, td.Name())
-	err := createMigration(fn, sqlt.RenameColumnTmpl, &td)
+	// Process SQL template for "up" migration.
+	upSQL, err := sqlt.ProcessTmpl(t, sqlt.RenameColumnTmpl)
 	if err != nil {
 		return err
 	}
 
-	// Add columns to table object
-	td.SetColumns([]sqlt.Column{}) // Reinitalize columns
+	// Zero columns
+	t.SetColumns([]sqlt.Column{})
+
+	// Add columns to table object, but now reverse the names.
 	for _, v := range args[1:] {
 		names := strings.Split(v, ":")
 
@@ -184,15 +184,24 @@ func renameColumnMigrations(cmd *cobra.Command, args []string) error {
 		col.SetName(names[1])
 		col.SetNewName(names[0])
 
-		td.AddColumn(col)
+		t.AddColumn(col)
 	}
 
-	// Create a "down" migration file.
-	fn = fmt.Sprintf("migrations/%d_rename_columns_in_%s_down.sql", timestamp, td.Name())
-	err = createMigration(fn, sqlt.RenameColumnTmpl, &td)
+	// Process SQL template for "down" migration.
+	downSQL, err := sqlt.ProcessTmpl(t, sqlt.RenameColumnTmpl)
 	if err != nil {
 		return err
 	}
+
+	// Configure a migration object.
+	m := new(migration.Migration)
+	m.SetName("RenameColumnsIn_" + tableName)
+	m.SetUpSQL(upSQL)
+	m.SetDownSQL(downSQL)
+	m.SetVersion(time.Now().UnixNano())
+
+	// Write migration file.
+	m.WriteToFile("migrations")
 
 	return err
 }

@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"regexp"
 	"testing"
 
-	"github.com/kevinsapp/monarch/pkg/fileutil"
 	"github.com/kevinsapp/monarch/pkg/migration"
 	"github.com/spf13/cobra"
 )
@@ -128,44 +126,16 @@ func TestRenameColumnMigrations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Check that exactly two files were created.
-	if l := len(files); l != 2 {
-		t.Errorf("wrong number of files created: want 2; got %d", l)
+	// Check that exactly one file was created.
+	if l := len(files); l != 1 {
+		t.Errorf("wrong number of files created: want 1; got %d", l)
 	}
 
-	// Check that the up migration file has the correct name.
-	exp := `_rename_columns_in_users_up.sql`
-	matched, _ := regexp.MatchString(exp, files[1].Name())
-	if !matched {
-		t.Errorf("up migration file with name %s not found", exp)
-	}
-
-	// Check that the up migration file has the expected content.
-	exp = testRenameColumnsUpSQL
-	act, err := fileutil.ReadFileAsString(migrationsDir + "/" + files[1].Name())
+	// Verify that the file can be read in to a migration object.
+	path := fmt.Sprintf("%s/%s", migrationsDir, files[0].Name())
+	m := new(migration.Migration)
+	err = m.ReadFromFile(path)
 	if err != nil {
-		t.Fatal(err)
-	}
-
-	if exp != act {
-		t.Errorf("\nwant %s\ngot %s\n", exp, act)
-	}
-
-	// Check that the down migration file has the correct name.
-	exp = `_rename_columns_in_users_down.sql`
-	matched, _ = regexp.MatchString(exp, files[0].Name())
-	if !matched {
-		t.Errorf("down migration file with name %s not found", exp)
-	}
-
-	// Check that the down migration file has the expected content.
-	exp = testRenameColumnsDownSQL
-	act, err = fileutil.ReadFileAsString(migrationsDir + "/" + files[0].Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if exp != act {
-		t.Errorf("want %s\n; got %s\n", exp, act)
+		t.Error(err)
 	}
 }
