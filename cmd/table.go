@@ -3,9 +3,7 @@ package cmd
 import (
 	"errors"
 	"strings"
-	"time"
 
-	"github.com/kevinsapp/monarch/pkg/migration"
 	"github.com/kevinsapp/monarch/pkg/sqlt"
 	"github.com/spf13/cobra"
 )
@@ -85,15 +83,8 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Configure a migration object.
-	m := new(migration.Migration)
-	m.SetName("CreateTable_" + tableName)
-	m.SetUpSQL(upSQL)
-	m.SetDownSQL(downSQL)
-	m.SetVersion(time.Now().UnixNano())
-
-	// Write migration file.
-	_, err = m.WriteToFile(migrationsDir)
+	// Create migration file.
+	err = createMigration("CreateTable_"+tableName, upSQL, downSQL)
 	if err != nil {
 		return err
 	}
@@ -125,15 +116,8 @@ func dropTableMigrations(cmd *cobra.Command, args []string) error {
 	// 	return err
 	// }
 
-	// Configure a migration object.
-	m := new(migration.Migration)
-	m.SetName("DropTable_" + tableName)
-	m.SetUpSQL(upSQL)
-	// m.SetDownSQL(downSQL)
-	m.SetVersion(time.Now().UnixNano())
-
-	// Write migration file.
-	_, err = m.WriteToFile(migrationsDir)
+	// Create migration file.
+	err = createMigration("DropTable_"+tableName, upSQL, "")
 	if err != nil {
 		return err
 	}
@@ -171,15 +155,8 @@ func renameTableMigrations(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Configure a migration object.
-	m := new(migration.Migration)
-	m.SetName("RenameTable_" + tableName)
-	m.SetUpSQL(upSQL)
-	m.SetDownSQL(downSQL)
-	m.SetVersion(time.Now().UnixNano())
-
-	// Write migration file.
-	_, err = m.WriteToFile(migrationsDir)
+	// Create migration file.
+	err = createMigration("RenameTable_"+tableName, upSQL, downSQL)
 	if err != nil {
 		return err
 	}
