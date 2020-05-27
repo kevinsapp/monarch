@@ -17,6 +17,7 @@ func init() {
 	dbCmd.AddCommand(createDBCmd)
 	dbCmd.AddCommand(dropDBCmd)
 	dbCmd.AddCommand(pingDBCmd)
+	dbCmd.AddCommand(renameDBCmd)
 	dbCmd.AddCommand(resetDBCmd)
 }
 
@@ -45,6 +46,15 @@ var pingDBCmd = &cobra.Command{
 	Use:   "ping",
 	Short: `Verifies that Monarch can connect to the database specificed in the config file.`,
 	RunE:  pingDB,
+}
+
+// renameDBCmd ...
+var renameDBCmd = &cobra.Command{
+	Use:   "rename [oldname] [newname]",
+	Short: `Rename a database from name to newname.`,
+	Long: `Rename a database from name to newname. Note: if you change the name of your database,
+	you should also change the database name specificed in your config file.`,
+	RunE: renameDB,
 }
 
 // resetDBCmd ...
@@ -154,6 +164,45 @@ func pingDB(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("Database connection OK. Command completed in %s.\n", duration)
+
+	return err
+}
+
+// renameDB renames a database from name to new name.
+func renameDB(cmd *cobra.Command, args []string) error {
+	// Initialize a dbServer object.
+	var srv dbServer
+	srv.initFromConfig()
+
+	// Configure a data object to apply to a SQL template.
+	database := sqlt.Database{}
+	database.SetName(args[0])
+	database.SetNewName(args[1])
+
+	// Process the SQL template.
+	query, err := sqlt.ProcessTmpl(&database, sqlt.RenameDBTmpl)
+	if err != nil {
+		log.Fatalf("ERROR: renameDB: %s\n", err)
+	}
+
+	// Connect to the database server.
+	srv.dbName = "" // dbName should be blank before getting DSN.
+	ctx := context.Background()
+	conn, err := pgx.Connect(ctx, srv.dsn())
+	if err != nil {
+		log.Fatalf("ERROR: renameDB: %s\n", err)
+	}
+	defer conn.Close(ctx)
+
+	// Execute query to create database.
+	start := time.Now()
+	_, err = conn.Exec(ctx, query)
+	duration := time.Since(start)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Database %q renamed to %q. Command completed in %s.\n", database.Name(), database.NewName(), duration)
 
 	return err
 }

@@ -25,6 +25,8 @@ CREATE DATABASE {{.Name}}
 
 DROP DATABASE IF EXISTS {{.Name}};
 `
+	// RenameTableTmpl is a SQL template for renaming databases.
+	RenameDBTmpl string = `ALTER DATABASE {{.Name}} RENAME TO {{.NewName}};`
 )
 
 // SQL templates for TABLE operaions

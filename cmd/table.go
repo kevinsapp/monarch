@@ -38,7 +38,7 @@ when the migration is run and the table has been dropped.`,
 // to [newname] and a companion "down" migration file to rename the table from
 // [newname] to [name].
 var renameTableCmd = &cobra.Command{
-	Use:   "table [oldname] [newname]",
+	Use:   "table [name] [newname]",
 	Short: "Generate migration files to rename a table from [name] to [newname].",
 	Long: `Generate an "up" migration file to rename a table from [name] to [newname]
 and a companion "down" migration file to rename the table from [newname] to [name].`,

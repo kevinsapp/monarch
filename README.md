@@ -34,6 +34,17 @@ Example: drop a database with the name specificed in the config file.
 monarch db drop
 ```
 
+#### Rename a database
+Syntax:
+`monarch db rename [name] [newname]`
+
+Example: rename a database from name to new name.
+```
+monarch db rename myappdb:myappDevelopment
+```
+
+Note: if you change the name of your database, you should also change the database name specificed in your config file.
+
 #### Reset a database
 Syntax:
 `monarch db reset`
@@ -41,15 +52,6 @@ Syntax:
 Example: drop and create a database with the name specificed in the config file.
 ```
 monarch db reset
-```
-
-#### Create a database
-Syntax:
-`monarch db create`
-
-Example: create a database
-```
-monarch db create
 ```
 
 ### Generating Migrations
