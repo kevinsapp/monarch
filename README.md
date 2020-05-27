@@ -11,6 +11,47 @@ Monarch is a command line tool for migrating PostgreSQL databases.
 
 ## Usage
 
+### Managing Databases
+
+#### Basic Syntax
+`monarch db command [subcommand]`
+
+#### Create a database
+Syntax:
+`monarch db create`
+
+Example: create a database with the name specificed in the config file.
+```
+monarch db create
+```
+
+#### Drop a database
+Syntax:
+`monarch db drop`
+
+Example: drop a database with the name specificed in the config file.
+```
+monarch db drop
+```
+
+#### Reset a database
+Syntax:
+`monarch db reset`
+
+Example: drop and create a database with the name specificed in the config file.
+```
+monarch db reset
+```
+
+#### Create a database
+Syntax:
+`monarch db create`
+
+Example: create a database
+```
+monarch db create
+```
+
 ### Generating Migrations
 
 #### Basic Syntax

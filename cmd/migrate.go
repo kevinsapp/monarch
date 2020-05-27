@@ -99,7 +99,7 @@ func createSchemaVersionsTable(ctx context.Context, pool *pgxpool.Pool) error {
 
 // fetchSchemaVersion fetches latest schema version from schema_versions table.
 func fetchSchemaVersion(ctx context.Context, pool *pgxpool.Pool) (int64, error) {
-	r := pool.QueryRow(ctx, "SELECT max(version) FROM schema_versions")
+	r := pool.QueryRow(ctx, "SELECT max(version) FROM schema_versions;")
 
 	var v pgtype.Int8
 	err := r.Scan(&v)
