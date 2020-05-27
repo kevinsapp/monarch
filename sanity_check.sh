@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 go test ./...
+if [ $? -eq 1 ]
+then
+  echo "Unit tests failed; Exiting." >&2
+  exit 1
+fi
 
 go install .
 
