@@ -25,7 +25,6 @@ migrations/
 
 # Ignore database configuration file(s)
 database.yaml
-dbscript.sh
 
 # Ignore tmp directory (sometime generated while testing)
 tmp/
