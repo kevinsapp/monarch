@@ -198,11 +198,13 @@ func LoadAllLaterThan(version int64, dirname string) ([]Migration, error) {
 			return migrations, err
 		}
 
-		// Select only the migration files with:
-		// a) a suffix of "up.sql", and
-		// b) a version greater than schemaVersion
-		if v > version && strings.HasSuffix(n, "up.sql") {
-			m.SetFromFile(dirname + "/" + n)
+		// Select only the migration files with a version greater than
+		// schemaVersion
+		if v > version {
+			err = m.ReadFromFile(dirname + "/" + n)
+			if err != nil {
+				return migrations, err
+			}
 			migrations = append(migrations, m)
 			fmt.Printf("Staged %q migration version: %d\n", "up", m.Version())
 		}

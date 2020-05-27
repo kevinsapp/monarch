@@ -65,7 +65,7 @@ func upMigrateSchema(ctx context.Context, conn *pgx.Conn) error {
 	}
 
 	// Stage the "up" migrations later than schema version
-	ms, err := migration.LoadAllLaterThan(ver, "migrations")
+	ms, err := migration.LoadAllLaterThan(ver, migrationsDir)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func execUpMigrations(ctx context.Context, conn *pgx.Conn, ms []migration.Migrat
 	// Migrate schema.
 	for _, m := range ms {
 		// Execute SQL statement from migration.
-		_, err = tx.Exec(ctx, m.SQL())
+		_, err = tx.Exec(ctx, m.UpSQL())
 		if err != nil {
 			return err
 		}
