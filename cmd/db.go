@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -32,6 +33,15 @@ var createDBCmd = &cobra.Command{
 	Use:   "create",
 	Short: `Create a database with the name specificed by the "database" attribute in the config file.`,
 	RunE:  createDB,
+}
+
+// copyCmd ...
+var copyDBCmd = &cobra.Command{
+	Use:   "copy [name] [targetname]",
+	Short: `Copy a database from name to targetname.`,
+	Long: `Copy a database from name to targetname. Note: Depending on the size of the source database,
+	it may take a while to complete copying.`,
+	RunE: copyDB,
 }
 
 // dropCmd ...
@@ -104,6 +114,51 @@ func createDB(cmd *cobra.Command, args []string) error {
 	return err
 }
 
+// copyDB copies a database from within the same server.
+func copyDB(cmd *cobra.Command, args []string) error {
+	// Caller should supply name of an existing db as the first argument,
+	// and a name for copy target db as the second argument.
+	if len(args) < 2 {
+		return errors.New("requires two arguments: name and targetname")
+	}
+
+	// Initialize a dbServer object.
+	var srv dbServer
+	srv.initFromConfig()
+
+	// Configure a data object to apply to a SQL template.
+	database := sqlt.Database{}
+	database.SetName(args[0])
+	database.SetCopyTargetName(args[1])
+
+	// Process the SQL template.
+	query, err := sqlt.ProcessTmpl(&database, sqlt.CopyDBTmpl)
+	if err != nil {
+		log.Fatalf("ERROR: renameDB: %s\n", err)
+	}
+
+	// Connect to the database server.
+	srv.dbName = "" // dbName should be blank before getting DSN.
+	ctx := context.Background()
+	conn, err := pgx.Connect(ctx, srv.dsn())
+	if err != nil {
+		log.Fatalf("ERROR: renameDB: %s\n", err)
+	}
+	defer conn.Close(ctx)
+
+	// Execute query to copy database.
+	start := time.Now()
+	_, err = conn.Exec(ctx, query)
+	duration := time.Since(start)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Database %q copied to %q. Command completed in %s.\n", database.Name(), database.CopyTargetName(), duration)
+
+	return err
+}
+
 // dropDB drops a database with the name specificed by the "database" attribute
 // in the viper config.
 func dropDB(cmd *cobra.Command, args []string) error {
@@ -170,6 +225,12 @@ func pingDB(cmd *cobra.Command, args []string) error {
 
 // renameDB renames a database from name to new name.
 func renameDB(cmd *cobra.Command, args []string) error {
+	// Caller should supply name of an existing db as the first argument,
+	// and a name for copy target db as the second argument.
+	if len(args) < 2 {
+		return errors.New("requires two arguments: name and newname")
+	}
+
 	// Initialize a dbServer object.
 	var srv dbServer
 	srv.initFromConfig()

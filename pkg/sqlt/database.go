@@ -4,9 +4,10 @@ import "github.com/iancoleman/strcase"
 
 // Database ...
 type Database struct {
-	name    string
-	newName string
-	owner   string
+	name           string
+	newName        string
+	owner          string
+	copyTargetName string
 }
 
 // Name returns name.
@@ -37,4 +38,14 @@ func (t *Database) Owner() string {
 // SetOwner sets owner.
 func (t *Database) SetOwner(owner string) {
 	t.owner = owner
+}
+
+// CopyTargetName returns copy-target name.
+func (t *Database) CopyTargetName() string {
+	return t.copyTargetName
+}
+
+// SetCopyTargetName sets copy-target name.
+func (t *Database) SetCopyTargetName(name string) {
+	t.copyTargetName = strcase.ToSnake(name)
 }

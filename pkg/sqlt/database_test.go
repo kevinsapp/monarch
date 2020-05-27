@@ -102,3 +102,26 @@ func TestDatabaseSetOwner(t *testing.T) {
 		t.Errorf("want %q; got %q", exp, act)
 	}
 }
+
+func TestDatabaseCopyTargetName(t *testing.T) {
+	db := Database{}
+	db.copyTargetName = "targetdb"
+
+	exp := db.copyTargetName
+	act := db.CopyTargetName() // Run Database.CopyTargetName()
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+}
+
+func TestDatabaseSetCopyTargetName(t *testing.T) {
+	c := "targetdb"
+
+	db := Database{}
+	db.SetCopyTargetName(c) // Run Database.SetCopyTargetName()
+	exp := c
+	act := db.copyTargetName
+	if exp != act {
+		t.Errorf("want %q; got %q", exp, act)
+	}
+}

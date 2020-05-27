@@ -14,17 +14,14 @@ const (
 	// LC_CTYPE = 'en_US.utf8'
 	// TABLESPACE = pg_default
 	// CONNECTION LIMIT = -1
-	CreateDBTmpl string = `-- Database: {{.Name}}
+	CreateDBTmpl string = `CREATE DATABASE {{.Name}} OWNER {{.Owner}};`
 
-CREATE DATABASE {{.Name}}
-	WITH 
-	OWNER = {{.Owner}};
-`
+	// CopyTableTmpl is a SQL template for copying databases.
+	CopyDBTmpl string = `CREATE DATABASE {{.CopyTargetName}} TEMPLATE {{.Name}};`
+
 	// DropTableTmpl is a SQL template for dropping databases.
-	DropDBTmpl string = `-- Database: {{.Name}}
+	DropDBTmpl string = `DROP DATABASE IF EXISTS {{.Name}};`
 
-DROP DATABASE IF EXISTS {{.Name}};
-`
 	// RenameTableTmpl is a SQL template for renaming databases.
 	RenameDBTmpl string = `ALTER DATABASE {{.Name}} RENAME TO {{.NewName}};`
 )

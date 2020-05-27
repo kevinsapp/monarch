@@ -36,6 +36,64 @@ func TestCreateDB(t *testing.T) {
 	}
 }
 
+func TestCopyDB(t *testing.T) {
+	// Set up arguments.
+	cmd := &cobra.Command{}
+	args := make([]string, 0)
+
+	// Initialize configuration from config file.
+	initConfig()
+
+	// Create a DB with the default name.
+	err := resetDB(cmd, args)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer dropDB(cmd, args) // Cleanup source db.
+
+	// Run copyDB() and verify that no errors occur.
+	args = append(args, "monarch_development")
+	args = append(args, "copy_target_db")
+	err = copyDB(cmd, args)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Establish a connection to the new db.
+	var srv dbServer
+	srv.initFromConfig()
+	srv.dbName = "copy_target_db" // dbName should be set to new db.
+	ctx := context.Background()
+	conn, err := pgx.Connect(ctx, srv.dsn())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify that we can ping the new db.
+	err = conn.Ping(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Execute query to drop new database (copy target).
+	err = conn.Close(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Drop the copied db.
+	srv.initFromConfig()
+	srv.dbName = "" // dbName should be blank before getting DSN.
+	conn, err = pgx.Connect(ctx, srv.dsn())
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = conn.Exec(ctx, "DROP DATABASE copy_target_db;")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestDropDB(t *testing.T) {
 	// Set up arguments.
 	cmd := &cobra.Command{}
