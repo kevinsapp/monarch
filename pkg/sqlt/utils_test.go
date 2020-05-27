@@ -24,15 +24,19 @@ const (
 	testRenameTableSQL string = `ALTER TABLE users RENAME TO people;`
 
 	testAddColumnSQL string = `ALTER TABLE users
-ADD COLUMN given_name VARCHAR
+ADD COLUMN given_name VARCHAR,
 ADD COLUMN family_name VARCHAR;`
 
 	testDropColumnSQL string = `ALTER TABLE users
-DROP COLUMN given_name;`
+DROP COLUMN IF EXISTS given_name;`
 
 	testRenameColumnSQL string = `ALTER TABLE users
-RENAME COLUMN given_name TO first_name
-RENAME COLUMN family_name TO last_name;`
+RENAME COLUMN given_name TO first_name;
+
+ALTER TABLE users
+RENAME COLUMN family_name TO last_name;
+
+`
 )
 
 // Unit test templateAsSQL

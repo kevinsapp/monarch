@@ -46,14 +46,16 @@ const (
 	RenameTableTmpl string = `ALTER TABLE {{.Name}} RENAME TO {{.NewName}};`
 
 	// AddColumnTmpl is a SQL template for adding columns to a table.
-	AddColumnTmpl string = `ALTER TABLE {{.Name}}{{range .Columns}}
-ADD COLUMN {{.Name}} {{.Type}}{{end}};`
+	AddColumnTmpl string = `ALTER TABLE {{.Name}}{{range $i, $col := .Columns}}{{if $i}},{{end}}
+ADD COLUMN {{$col.Name}} {{$col.Type}}{{end}};`
 
 	// DropColumnTmpl is a SQL template for dropping columns from a table.
-	DropColumnTmpl string = `ALTER TABLE {{.Name}}{{range .Columns}}
-DROP COLUMN {{.Name}}{{end}};`
+	DropColumnTmpl string = `ALTER TABLE {{.Name}}{{$l := len .Columns}}{{range $i, $col := .Columns}}{{if $i}},{{end}}
+DROP COLUMN IF EXISTS {{$col.Name}}{{end}};`
 
 	// RenameColumnTmpl is a SQL template for renaming columns in a table.
-	RenameColumnTmpl string = `ALTER TABLE {{.Name}}{{range .Columns}}
-RENAME COLUMN {{.Name}} TO {{.NewName}}{{end}};`
+	RenameColumnTmpl string = `{{ $table := .Name }}{{range .Columns}}ALTER TABLE {{ $table }}
+RENAME COLUMN {{.Name}} TO {{.NewName}};
+
+{{end}}`
 )
