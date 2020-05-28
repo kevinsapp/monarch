@@ -14,7 +14,7 @@ Monarch is a command line tool for migrating PostgreSQL databases.
 ### Managing Databases
 
 #### Basic Syntax
-`monarch db command [subcommand]`
+`monarch db command [ [argument] ... ]`
 
 #### Create a database
 Syntax:
@@ -24,6 +24,17 @@ Example: create a database with the name specificed in the config file.
 ```
 monarch db create
 ```
+
+#### Copy a database
+Syntax:
+`monarch db copy [sourcedbname] [targetdb]`
+
+Example: copy a database from sourcedb to targetdb.
+```
+monarch db copy sourcedb targetdb
+```
+
+Note: copying a database can take a while depending on how much data is in the source db.
 
 #### Drop a database
 Syntax:
@@ -38,9 +49,9 @@ monarch db drop
 Syntax:
 `monarch db rename [name] [newname]`
 
-Example: rename a database from name to new name.
+Example: rename a database from olddb to newdb.
 ```
-monarch db rename myappdb:myappDevelopment
+monarch db rename olddb newdb
 ```
 
 Note: if you change the name of your database, you should also change the database name specificed in your config file.
