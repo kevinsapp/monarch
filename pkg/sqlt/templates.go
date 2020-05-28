@@ -8,12 +8,6 @@ import (
 // SQL templates for DATABASE operaions
 const (
 	// CreateDBTmpl is a SQL template for creating databases.
-	// TODO: consider adding options:
-	// ENCODING = 'UTF8'
-	// LC_COLLATE = 'en_US.utf8'
-	// LC_CTYPE = 'en_US.utf8'
-	// TABLESPACE = pg_default
-	// CONNECTION LIMIT = -1
 	CreateDBTmpl string = `CREATE DATABASE {{.Name}} OWNER {{.Owner}};`
 
 	// CopyTableTmpl is a SQL template for copying databases.

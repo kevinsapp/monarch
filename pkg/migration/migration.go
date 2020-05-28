@@ -105,7 +105,7 @@ func (m *Migration) SetFromFile(path string) error {
 	}
 
 	// Extract version from migration file name.
-	v, err := fileutil.ExtractVersionFromFile(path)
+	v, err := extractVersionFromFile(path)
 	if err != nil {
 		return err
 	}
@@ -193,7 +193,7 @@ func LoadAllLaterThan(version int64, dirname string) ([]Migration, error) {
 	var m Migration
 	for _, f := range files {
 		n := f.Name()
-		v, err := fileutil.ExtractVersionFromFile(n)
+		v, err := extractVersionFromFile(n)
 		if err != nil {
 			return migrations, err
 		}
@@ -211,4 +211,16 @@ func LoadAllLaterThan(version int64, dirname string) ([]Migration, error) {
 	}
 
 	return migrations, err
+}
+
+// extractVersionFromFile extracts version from a migration file name.
+func extractVersionFromFile(path string) (int64, error) {
+	fn := filepath.Base(path)
+	fnParts := strings.Split(fn, "_")
+	ver, err := strconv.ParseInt(fnParts[0], 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return ver, err
 }

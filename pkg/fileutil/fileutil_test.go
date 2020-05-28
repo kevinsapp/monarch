@@ -56,8 +56,8 @@ func TestCreateAndWriteString(t *testing.T) {
 	}
 }
 
-// Unit test Mkdir
-func TestMkdir(t *testing.T) {
+// Unit test MkdirP
+func TestMkdirP(t *testing.T) {
 	// Call Mkdir to create a directory.
 	dn := "test_directory" // directory name
 	path := tmpTestDir + dn
