@@ -96,23 +96,26 @@ func (m *Migration) SetVersion(ver int64) {
 	m.version = ver
 }
 
-// SetFromFile sets fields from a migration file.
-func (m *Migration) SetFromFile(path string) error {
-	// Read in content from migration file to a buffer.
-	s, err := fileutil.ReadFileAsString(path)
+// ReadFromFile creates a migration file in the directory specified by "dir"
+// and writes content to it based on this migration's fields.
+func (m *Migration) ReadFromFile(path string) error {
+	// Set name
+	m.SetNameFromFilename(path)
+
+	// Set version
+	version, err := extractVersionFromFile(path)
 	if err != nil {
 		return err
 	}
+	m.SetVersion(version)
 
-	// Extract version from migration file name.
-	v, err := extractVersionFromFile(path)
-	if err != nil {
-		return err
-	}
-
-	// Set fields.
-	m.SetUpSQL(s)
-	m.SetVersion(v)
+	// Set upSQL and downSQL
+	str, err := fileutil.ReadFileAsString(path)
+	parts := strings.Split(str, migrationDelimiter)
+	upSQL := strings.TrimSpace(parts[0])
+	downSQL := strings.TrimSpace(parts[1])
+	m.SetUpSQL(upSQL)
+	m.SetDownSQL(downSQL)
 
 	return err
 }
@@ -133,29 +136,6 @@ func (m *Migration) WriteToFile(dirname string) (string, error) {
 	return fn, err
 }
 
-// ReadFromFile creates a migration file in the directory specified by "dir"
-// and writes content to it based on this migration's fields.
-func (m *Migration) ReadFromFile(path string) error {
-	// Set name
-	m.SetNameFromFilename(path)
-
-	// Set version
-	err := m.SetVersionFromFilename(path)
-	if err != nil {
-		return err
-	}
-
-	// Set upSQL and downSQL
-	str, err := fileutil.ReadFileAsString(path)
-	parts := strings.Split(str, migrationDelimiter)
-	upSQL := strings.TrimSpace(parts[0])
-	downSQL := strings.TrimSpace(parts[1])
-	m.SetUpSQL(upSQL)
-	m.SetDownSQL(downSQL)
-
-	return err
-}
-
 // SetNameFromFilename extracts name from a migration filename.
 func (m *Migration) SetNameFromFilename(path string) {
 	fn := filepath.Base(path)
@@ -164,20 +144,6 @@ func (m *Migration) SetNameFromFilename(path string) {
 	name = strings.TrimSuffix(name, ".sql")
 
 	m.SetName(name)
-}
-
-// SetVersionFromFilename extracts version from a migration file name.
-func (m *Migration) SetVersionFromFilename(path string) error {
-	fn := filepath.Base(path)
-	fnParts := strings.Split(fn, "_")
-	ver, err := strconv.ParseInt(fnParts[0], 10, 64)
-	if err != nil {
-		return err
-	}
-
-	m.SetVersion(ver)
-
-	return err
 }
 
 // LoadAllLaterThan ...
