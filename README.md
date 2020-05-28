@@ -116,7 +116,7 @@ Example: generate a migration to rename a table from `old_name` to `new_name`
 monarch g m rename table oldName newName
 ```
 
-#### Add columns to a table
+#### Add columns to an existing table
 Syntax:
 `monarch generate migration add column [tableName] [ [colName:type] ... ]`
 
