@@ -30,8 +30,7 @@ func TestMain(m *testing.M) {
 // Unit test CreateAndWriteString
 func TestCreateAndWriteString(t *testing.T) {
 	ts := time.Now().UnixNano()
-	fn := fmt.Sprintf("%d_test.txt", ts) // filename
-	path := tmpTestDir + fn
+	path := fmt.Sprintf("%s/%d_test.txt", tmpTestDir, ts) // filename
 
 	// Write string to the file (any string will do)
 	str := "Some text to write to a file."
@@ -52,7 +51,7 @@ func TestCreateAndWriteString(t *testing.T) {
 	act := string(buf)
 
 	if exp != act {
-		t.Errorf("want %q\n; got %q\n", exp, act)
+		t.Errorf("want %q\n got %q\n", exp, act)
 	}
 }
 
@@ -95,8 +94,7 @@ func TestMkdirP(t *testing.T) {
 // Unit test ReadFileAsString
 func TestReadFileAsString(t *testing.T) {
 	ts := time.Now().UnixNano()
-	n := fmt.Sprintf("%d_test.txt", ts)
-	path := tmpTestDir + n
+	path := fmt.Sprintf("%s/%d_test.txt", tmpTestDir, ts) // filename
 
 	// Write string to the file (any string will do)
 	str := "Some text to write to a file."
@@ -117,6 +115,6 @@ func TestReadFileAsString(t *testing.T) {
 	act := rstr
 
 	if exp != act {
-		t.Errorf("want %q\n; got %q\n", exp, act)
+		t.Errorf("want %q\n got %q\n", exp, act)
 	}
 }
