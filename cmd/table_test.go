@@ -23,8 +23,7 @@ const (
 	created_at timestamp(6) without time zone NOT NULL,
 	updated_at timestamp(6) without time zone NOT NULL,
 	CONSTRAINT users_pkey PRIMARY KEY (id)
-);
-`
+);`
 
 	testCreateTableWithColsSQL string = `CREATE TABLE users (
 	id bigint NOT NULL,
@@ -42,19 +41,12 @@ const (
 	created_at timestamp(6) without time zone NOT NULL,
 	updated_at timestamp(6) without time zone NOT NULL,
 	CONSTRAINT users_pkey PRIMARY KEY (id)
-);
-`
+);`
 	testDropTableSQL string = `DROP TABLE users;`
 
-	testRenameTableUpSQL string = `-- Table: users
+	testRenameTableUpSQL string = `ALTER TABLE users RENAME TO people;`
 
-ALTER TABLE users RENAME TO people;
-`
-
-	testRenameTableDownSQL string = `-- Table: people
-
-ALTER TABLE people RENAME TO users;
-`
+	testRenameTableDownSQL string = `ALTER TABLE people RENAME TO users;`
 )
 
 // Unit test createTableMigrations()
@@ -89,6 +81,20 @@ func TestCreateTableMigrations(t *testing.T) {
 	err = m.ReadFromFile(path)
 	if err != nil {
 		t.Error(err)
+	}
+
+	// Verify that the upSQL is as expected
+	exp := testCreateTableSQL
+	act := m.UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
+
+	// Verify that the downSQL is as expected
+	exp = testDropTableSQL
+	act = m.DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\ngot %q\n", exp, act)
 	}
 }
 
@@ -132,6 +138,20 @@ func TestCreateTableWithColsMigrations(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	// Verify that the upSQL is as expected
+	exp := testCreateTableWithColsSQL
+	act := m.UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
+
+	// Verify that the downSQL is as expected
+	exp = testDropTableSQL
+	act = m.DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\ngot %q\n", exp, act)
+	}
 }
 
 // Unit test dropTableMigrations()
@@ -166,6 +186,20 @@ func TestDropTableMigrations(t *testing.T) {
 	err = m.ReadFromFile(path)
 	if err != nil {
 		t.Error(err)
+	}
+
+	// Verify that the upSQL is as expected
+	exp := testDropTableSQL
+	act := m.UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
+
+	// Verify that the downSQL is as expected
+	exp = "" // downSQL should be blank since this migratin is not reversible.
+	act = m.DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\ngot %q\n", exp, act)
 	}
 }
 
@@ -202,5 +236,19 @@ func TestRenameTableMigrations(t *testing.T) {
 	err = m.ReadFromFile(path)
 	if err != nil {
 		t.Error(err)
+	}
+
+	// Verify that the upSQL is as expected
+	exp := testRenameTableUpSQL
+	act := m.UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
+
+	// Verify that the downSQL is as expected
+	exp = testRenameTableDownSQL
+	act = m.DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\ngot %q\n", exp, act)
 	}
 }
