@@ -100,7 +100,8 @@ func (m *Migration) SetVersion(ver int64) {
 // and writes content to it based on this migration's fields.
 func (m *Migration) ReadFromFile(path string) error {
 	// Set name
-	m.SetNameFromFilename(path)
+	name := extractNameFromFile(path)
+	m.SetName(name)
 
 	// Set version
 	version, err := extractVersionFromFile(path)
@@ -136,16 +137,6 @@ func (m *Migration) WriteToFile(dirname string) (string, error) {
 	return fn, err
 }
 
-// SetNameFromFilename extracts name from a migration filename.
-func (m *Migration) SetNameFromFilename(path string) {
-	fn := filepath.Base(path)
-	fnParts := strings.Split(fn, "_")
-	name := strings.Join(fnParts[1:], "_")
-	name = strings.TrimSuffix(name, ".sql")
-
-	m.SetName(name)
-}
-
 // LoadAllLaterThan ...
 func LoadAllLaterThan(version int64, dirname string) ([]Migration, error) {
 	migrations := make([]Migration, 0)
@@ -179,7 +170,17 @@ func LoadAllLaterThan(version int64, dirname string) ([]Migration, error) {
 	return migrations, err
 }
 
-// extractVersionFromFile extracts version from a migration file name.
+// extractNameFromFile extracts name from a migration filename.
+func extractNameFromFile(path string) string {
+	fn := filepath.Base(path)
+	fnParts := strings.Split(fn, "_")
+	name := strings.Join(fnParts[1:], "_")
+	name = strings.TrimSuffix(name, ".sql")
+
+	return name
+}
+
+// extractVersionFromFile extracts version from a migration filename.
 func extractVersionFromFile(path string) (int64, error) {
 	fn := filepath.Base(path)
 	fnParts := strings.Split(fn, "_")
