@@ -185,3 +185,78 @@ func TestMigrationReadFromFile(t *testing.T) {
 		t.Errorf("want %d; got %d", expv, actv)
 	}
 }
+
+func TestLoadAllLaterThan(t *testing.T) {
+	// Allocate a migration and write it to a file.
+	m1 := Migration{}
+	m1.SetName("CreateTableUsers")
+	m1.SetUpSQL("CREATE TABLE one;")
+	m1.SetDownSQL("DROP TABLE one;")
+	m1.SetVersion(time.Now().UnixNano())
+	_, err := m1.WriteToFile(tmpTestMigrationsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Generate a timestamp
+	version := time.Now().UnixNano()
+
+	// Generate two more migrations. These will be "later than" m1
+	m2 := Migration{}
+	m2.SetName("CreateTableUsers")
+	m2.SetUpSQL("CREATE TABLE two;")
+	m2.SetDownSQL("DROP TABLE two;")
+	m2.SetVersion(time.Now().UnixNano())
+	_, err = m2.WriteToFile(tmpTestMigrationsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	m2.SetName("CreateTableUsers")
+	m2.SetUpSQL("CREATE TABLE three;")
+	m2.SetDownSQL("DROP TABLE three;")
+	m2.SetVersion(time.Now().UnixNano())
+	_, err = m2.WriteToFile(tmpTestMigrationsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Run LoadAllLaterThan()
+	migrations, err := LoadAllLaterThan(version, tmpTestMigrationsDir)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Should have loaded exactly two migrations (the latter two).
+	if count := len(migrations); count != 2 {
+		t.Errorf("want 2; got %d", count)
+	}
+
+	// Verify migration 2 upSQL
+	exp := "CREATE TABLE two;"
+	act := migrations[0].UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q\n got %q\n", exp, act)
+	}
+
+	// Verify migration 2 downSQL
+	exp = "DROP TABLE two;"
+	act = migrations[0].DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q\n got %q\n", exp, act)
+	}
+
+	// Verify migration 3 upSQL
+	exp = "CREATE TABLE three;"
+	act = migrations[1].UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q\n got %q\n", exp, act)
+	}
+
+	// Verify migration 3 downSQL
+	exp = "DROP TABLE three;"
+	act = migrations[1].DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q\n got %q\n", exp, act)
+	}
+}
