@@ -21,7 +21,7 @@ var createTableCmd = &cobra.Command{
 	Short: "Generate migration files to create a table named [name].",
 	Long: `Generate an "up" migration file to create a table named [name]
 and a companion "down" migration file to drop that table.`,
-	RunE: createTableMigrations,
+	RunE: createTableMigration,
 }
 
 // dropTableCmd generates an "up" migration file to drop a table.
@@ -31,7 +31,7 @@ var dropTableCmd = &cobra.Command{
 	Long: `Generate an "up" migration file to drop a table named [name]
 This migration is irreversible and any data in the table will be lost
 when the migration is run and the table has been dropped.`,
-	RunE: dropTableMigrations,
+	RunE: dropTableMigration,
 }
 
 // renameTableCmd generates  an "up" migration file to rename a table from [name]
@@ -42,11 +42,11 @@ var renameTableCmd = &cobra.Command{
 	Short: "Generate migration files to rename a table from [name] to [newname].",
 	Long: `Generate an "up" migration file to rename a table from [name] to [newname]
 and a companion "down" migration file to rename the table from [newname] to [name].`,
-	RunE: renameTableMigrations,
+	RunE: renameTableMigration,
 }
 
-// createTableMigrations creates a migration file to create a table.
-func createTableMigrations(cmd *cobra.Command, args []string) error {
+// createTableMigration creates a migration file to create a table.
+func createTableMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument.
 	if len(args) < 1 {
 		return errors.New("requires a name argument")
@@ -92,8 +92,8 @@ func createTableMigrations(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// dropTableMigrations creates an "up" migration file to drop a table.
-func dropTableMigrations(cmd *cobra.Command, args []string) error {
+// dropTableMigration creates an "up" migration file to drop a table.
+func dropTableMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument.
 	if len(args) < 1 {
 		return errors.New("requires a name argument")
@@ -125,9 +125,9 @@ func dropTableMigrations(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// renameTableMigrations generates a migration file to rename a table from
+// renameTableMigration generates a migration file to rename a table from
 // [name] to [newname].
-func renameTableMigrations(cmd *cobra.Command, args []string) error {
+func renameTableMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply name of an existing table as the first argument,
 	// and a new name for that table as the second argument.
 	if len(args) < 2 {

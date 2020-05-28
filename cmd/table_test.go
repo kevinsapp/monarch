@@ -59,7 +59,7 @@ func TestCreateTableMigrations(t *testing.T) {
 
 	// Run createTableMigrations()
 	args = append(args, "users")
-	err := createTableMigrations(cmd, args)
+	err := createTableMigration(cmd, args)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestCreateTableWithColsMigrations(t *testing.T) {
 	args = append(args, "active:boolean")     // column
 
 	// Run createTableMigrations()
-	err := createTableMigrations(cmd, args)
+	err := createTableMigration(cmd, args)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +164,7 @@ func TestDropTableMigrations(t *testing.T) {
 
 	// Run dropTableMigrations()
 	args = append(args, "users")
-	err := dropTableMigrations(cmd, args)
+	err := dropTableMigration(cmd, args)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ func TestRenameTableMigrations(t *testing.T) {
 	// Run renameTableMigrations()
 	args = append(args, "users")  // first argument
 	args = append(args, "people") // second argument
-	err := renameTableMigrations(cmd, args)
+	err := renameTableMigration(cmd, args)
 	if err != nil {
 		t.Fatal(err)
 	}
