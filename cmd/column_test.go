@@ -13,19 +13,23 @@ import (
 // Test data - expected SQL
 const (
 	testAddColumnsSQL string = `ALTER TABLE users
-ADD COLUMN given_name varchar
+ADD COLUMN given_name varchar,
 ADD COLUMN family_name varchar;`
 
 	testDropColumnsSQL string = `ALTER TABLE users
-DROP COLUMN given_name
-DROP COLUMN family_name;`
+DROP COLUMN IF EXISTS given_name,
+DROP COLUMN IF EXISTS family_name;`
 
 	testRenameColumnsUpSQL string = `ALTER TABLE users
-RENAME COLUMN given_name TO first_name
+RENAME COLUMN given_name TO first_name;
+
+ALTER TABLE users
 RENAME COLUMN family_name TO last_name;`
 
 	testRenameColumnsDownSQL string = `ALTER TABLE users
-RENAME COLUMN first_name TO given_name
+RENAME COLUMN first_name TO given_name;
+
+ALTER TABLE users
 RENAME COLUMN last_name TO family_name;`
 )
 
@@ -64,6 +68,20 @@ func TestAddColumnMigrations(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	// Verify that the upSQL is as expected.
+	exp := testAddColumnsSQL
+	act := m.UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
+
+	// Verify that the downSQL is as expected.
+	exp = testDropColumnsSQL
+	act = m.DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
 }
 
 // Unit test dropColumnMigrations()
@@ -101,6 +119,20 @@ func TestDropColumnMigrations(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	// Verify that the upSQL is as expected.
+	exp := testDropColumnsSQL
+	act := m.UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
+
+	// Verify that the downSQL is as expected.
+	exp = "" // downSQL should be blank since this migratin is not reversible.
+	act = m.DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\ngot %q\n", exp, act)
+	}
 }
 
 // Unit test addColumnMigrations()
@@ -137,5 +169,19 @@ func TestRenameColumnMigrations(t *testing.T) {
 	err = m.ReadFromFile(path)
 	if err != nil {
 		t.Error(err)
+	}
+
+	// Verify that the upSQL is as expected.
+	exp := testRenameColumnsUpSQL
+	act := m.UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
+
+	// Verify that the downSQL is as expected.
+	exp = testRenameColumnsDownSQL
+	act = m.DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
 	}
 }

@@ -51,17 +51,17 @@ func TestCreateIndexMigration(t *testing.T) {
 		t.Error(err)
 	}
 
-	// Verify that the upSQL is correct
+	// Verify that the upSQL is as expected.
 	exp := testCreateDefaultIndexSQL
 	act := m.UpSQL()
 	if exp != act {
-		t.Errorf("\nwant %q;\ngot %q\n", exp, act)
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
 	}
 
-	// Verify that the downSQL is correct
+	// Verify that the downSQL is as expected.
 	exp = testDropIndexSQL
 	act = m.DownSQL()
 	if exp != act {
-		t.Errorf("\nwant %q;\ngot %q\n", exp, act)
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
 	}
 }

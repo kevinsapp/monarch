@@ -188,14 +188,14 @@ func TestDropTableMigrations(t *testing.T) {
 		t.Error(err)
 	}
 
-	// Verify that the upSQL is as expected
+	// Verify that the upSQL is as expected.
 	exp := testDropTableSQL
 	act := m.UpSQL()
 	if exp != act {
 		t.Errorf("\nwant %q;\n got %q\n", exp, act)
 	}
 
-	// Verify that the downSQL is as expected
+	// Verify that the downSQL is as expected.
 	exp = "" // downSQL should be blank since this migratin is not reversible.
 	act = m.DownSQL()
 	if exp != act {
@@ -238,14 +238,14 @@ func TestRenameTableMigrations(t *testing.T) {
 		t.Error(err)
 	}
 
-	// Verify that the upSQL is as expected
+	// Verify that the upSQL is as expected.
 	exp := testRenameTableUpSQL
 	act := m.UpSQL()
 	if exp != act {
 		t.Errorf("\nwant %q;\n got %q\n", exp, act)
 	}
 
-	// Verify that the downSQL is as expected
+	// Verify that the downSQL is as expected.
 	exp = testRenameTableDownSQL
 	act = m.DownSQL()
 	if exp != act {
