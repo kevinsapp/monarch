@@ -62,6 +62,12 @@ DROP COLUMN IF EXISTS {{$col.Name}}{{end}};`
 RENAME COLUMN {{.Name}} TO {{.NewName}};
 
 {{end}}`
+
+	// CreateDefaultIndexTmpl is a SQL template for creating an index of the default type on one column.
+	CreateDefaultIndexTmpl string = `CREATE INDEX {{.Name}} ON {{.TableName}} ({{.ColumnName}});`
+
+	// DropIndexTmpl is a SQL template for dropping and index.
+	DropIndexTmpl string = `DROP INDEX IF EXISTS {{.Name}};`
 )
 
 // ProcessTmpl applies a data structure to a SQL template and returns a string.

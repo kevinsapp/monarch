@@ -142,3 +142,12 @@ Example: generate a migration to rename column `given_name` to `first_name`
 ```
 monarch g m rename column users givenName:firstName
 ```
+
+#### Create an index on an existing table
+Syntax:
+`monarch generate migration create index [tableName] [colName]`
+
+Example: generate a migration to create a default index on table `cars` column `color`
+```
+monarch g m create index cars color
+```
