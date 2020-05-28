@@ -21,7 +21,7 @@ var addColumnCmd = &cobra.Command{
 	Short: "Generate migration files to add a column named [colName] with type [type].",
 	Long: `Generate an "up" migration file to add a column named [colName] with type
 [type] and a companion "down" migration file to remove that column.`,
-	RunE: addColumnMigrations,
+	RunE: addColumnMigration,
 }
 
 // dropColumnCmd generates an "up" migration file to remove a column
@@ -30,23 +30,22 @@ var dropColumnCmd = &cobra.Command{
 	Use:   "column [ [name] ... ]",
 	Short: "Generate migration files to drop a column named [colName].",
 	Long:  `Generate an "up" migration file to drop a column named [colName].`,
-	RunE:  dropColumnMigrations,
+	RunE:  dropColumnMigration,
 }
 
 // renameColumnMigrations generates an "up" migration file to rename a column from
-// [name] to [newname] and a companion "down" migration file to rename the column
-// from [newname] to [name].
+// [name] to [newname].
 var renameColumnCmd = &cobra.Command{
 	Use:   "column [tableName] [ [name:newName] ... ]",
 	Short: "Generate migration files to rename a column from [name] to [newName].",
 	Long: `Generate an "up" migration file to rename a column from [name] to [newName]
 and a companion "down" migration file to rename the column from [newName] to [name].`,
-	RunE: renameColumnMigrations,
+	RunE: renameColumnMigration,
 }
 
-// addColumnMigrations creates an "up" migration file to add a column to
+// addColumnMigration creates an "up" migration file to add a column to
 // a table and a "down" migration file to remove that column.
-func addColumnMigrations(cmd *cobra.Command, args []string) error {
+func addColumnMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument and a column
 	// name:type pair as the second argument.
 	if len(args) < 2 {
@@ -90,9 +89,9 @@ func addColumnMigrations(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// dropColumnMigrations creates an "up" migration file to drop a column
+// dropColumnMigration creates an "up" migration file to drop a column
 // from a table.
-func dropColumnMigrations(cmd *cobra.Command, args []string) error {
+func dropColumnMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument.
 	if len(args) < 2 {
 		return errors.New("requires tableName and colName arguments")
@@ -132,10 +131,10 @@ func dropColumnMigrations(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// renameColumnMigrations creates an "up" migration file to rename a column from
+// renameColumnMigration creates an "up" migration file to rename a column from
 // [name] to [newName] a "down" migration file to rename that column from [newName]
 // to [name].
-func renameColumnMigrations(cmd *cobra.Command, args []string) error {
+func renameColumnMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument.
 	if len(args) < 2 {
 		return errors.New("requires tableName and colName:newName arguments")
