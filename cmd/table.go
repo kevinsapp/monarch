@@ -18,19 +18,17 @@ func init() {
 // file to drop that table.
 var createTableCmd = &cobra.Command{
 	Use:   "table [name]",
-	Short: "Generate migration files to create a table named [name].",
-	Long: `Generate an "up" migration file to create a table named [name]
-and a companion "down" migration file to drop that table.`,
-	RunE: createTableMigration,
+	Short: "Generate a migration file to create a table named [name].",
+	RunE:  createTableMigration,
 }
 
 // dropTableCmd generates an "up" migration file to drop a table.
 var dropTableCmd = &cobra.Command{
 	Use:   "table [name]",
-	Short: "Generate an migration file to drop a table named [name].",
-	Long: `Generate an "up" migration file to drop a table named [name]
-This migration is irreversible and any data in the table will be lost
-when the migration is run and the table has been dropped.`,
+	Short: "Generate a migration file to drop a table named [name].",
+	Long: `Generate a migration file to drop a table named [name].
+	WARNING: This migration is irreversible and any data in the table will be lost
+	when the migration is run and the table has been dropped.`,
 	RunE: dropTableMigration,
 }
 
@@ -39,10 +37,8 @@ when the migration is run and the table has been dropped.`,
 // [newname] to [name].
 var renameTableCmd = &cobra.Command{
 	Use:   "table [name] [newname]",
-	Short: "Generate migration files to rename a table from [name] to [newname].",
-	Long: `Generate an "up" migration file to rename a table from [name] to [newname]
-and a companion "down" migration file to rename the table from [newname] to [name].`,
-	RunE: renameTableMigration,
+	Short: "Generate a migration file to rename a table from [name] to [newname].",
+	RunE:  renameTableMigration,
 }
 
 // createTableMigration creates a migration file to create a table.

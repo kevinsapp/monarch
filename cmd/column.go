@@ -18,18 +18,15 @@ func init() {
 // a table and a "down" migration file to remove that column.
 var addColumnCmd = &cobra.Command{
 	Use:   "column [tableName] [ [colName:type] ... ]",
-	Short: "Generate migration files to add a column named [colName] with type [type].",
-	Long: `Generate an "up" migration file to add a column named [colName] with type
-[type] and a companion "down" migration file to remove that column.`,
-	RunE: addColumnMigration,
+	Short: "Generate a migration file to add a column named [colName] with type [type].",
+	RunE:  addColumnMigration,
 }
 
 // dropColumnCmd generates an "up" migration file to remove a column
 // from a table.
 var dropColumnCmd = &cobra.Command{
 	Use:   "column [ [name] ... ]",
-	Short: "Generate migration files to drop a column named [colName].",
-	Long:  `Generate an "up" migration file to drop a column named [colName].`,
+	Short: "Generate a migration file to drop a column named [colName].",
 	RunE:  dropColumnMigration,
 }
 
@@ -37,10 +34,8 @@ var dropColumnCmd = &cobra.Command{
 // [name] to [newname].
 var renameColumnCmd = &cobra.Command{
 	Use:   "column [tableName] [ [name:newName] ... ]",
-	Short: "Generate migration files to rename a column from [name] to [newName].",
-	Long: `Generate an "up" migration file to rename a column from [name] to [newName]
-and a companion "down" migration file to rename the column from [newName] to [name].`,
-	RunE: renameColumnMigration,
+	Short: "Generate a migration file to rename a column from [name] to [newName].",
+	RunE:  renameColumnMigration,
 }
 
 // addColumnMigration creates an "up" migration file to add a column to
