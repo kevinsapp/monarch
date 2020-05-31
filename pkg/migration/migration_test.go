@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 
 // Unit test Migration.Name
 func TestMigrationName(t *testing.T) {
-	m := new(Migration)
+	m := Migration{}
 	s := "CreateTableUsers"
 	exp := "create_table_users"
 
@@ -42,7 +42,7 @@ func TestMigrationName(t *testing.T) {
 
 // Unit test Migration.LeadingComment
 func TestMigrationLeadingComment(t *testing.T) {
-	m := new(Migration)
+	m := Migration{}
 	s := "This is a comment"
 	exp := "-- This is a comment"
 
@@ -55,7 +55,7 @@ func TestMigrationLeadingComment(t *testing.T) {
 
 // Unit test Migration.UpSQL
 func TestMigrationUpSQL(t *testing.T) {
-	m := new(Migration)
+	m := Migration{}
 	s := "CREATE TABLE users;"
 
 	exp := s
@@ -68,7 +68,7 @@ func TestMigrationUpSQL(t *testing.T) {
 
 // Unit test Migration.UpSQL
 func TestMigrationDownSQL(t *testing.T) {
-	m := new(Migration)
+	m := Migration{}
 	s := "DROP TABLE users;"
 
 	exp := s
@@ -81,7 +81,7 @@ func TestMigrationDownSQL(t *testing.T) {
 
 // Unit test Migration.SQL
 func TestMigrationSQL(t *testing.T) {
-	m := new(Migration)
+	m := Migration{}
 	up := "CREATE TABLE users;"
 	down := "DROP TABLE users;"
 
@@ -102,7 +102,7 @@ DROP TABLE users;`
 
 // Unit test Migration.Version
 func TestMigrationVersion(t *testing.T) {
-	m := new(Migration)
+	m := Migration{}
 	var i int64 = 1234567890
 
 	exp := i
@@ -115,16 +115,7 @@ func TestMigrationVersion(t *testing.T) {
 
 // Unit test Migration.WriteToFile()
 func TestMigrationWriteToFile(t *testing.T) {
-	m := new(Migration)
-	m.SetName("CreateTableUsers")
-	m.SetUpSQL("CREATE TABLE users;")
-	m.SetDownSQL("DROP TABLE users;")
-	m.SetVersion(time.Now().UnixNano())
-
-	fn, err := m.WriteToFile(tmpTestMigrationsDir)
-	if err != nil {
-		t.Fatal(err)
-	}
+	m, fn := makeMigrationHelper("users", t)
 
 	exp := m.SQL()
 	act, err := fileutil.ReadFileAsString(fn)
@@ -139,21 +130,11 @@ func TestMigrationWriteToFile(t *testing.T) {
 
 // Unit test Migration.ReadFromFile()
 func TestMigrationReadFromFile(t *testing.T) {
-	// Allocate a migration and write it to a file.
-	m := new(Migration)
-	m.SetName("CreateTableUsers")
-	m.SetUpSQL("CREATE TABLE users;")
-	m.SetDownSQL("DROP TABLE users;")
-	m.SetVersion(time.Now().UnixNano())
-
-	fn, err := m.WriteToFile(tmpTestMigrationsDir)
-	if err != nil {
-		t.Fatal(err)
-	}
+	m, fn := makeMigrationHelper("users", t)
 
 	// Allocate a new migration and read in from file.
 	rm := new(Migration)
-	err = rm.ReadFromFile(fn)
+	err := rm.ReadFromFile(fn)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,28 +168,15 @@ func TestMigrationReadFromFile(t *testing.T) {
 }
 
 func TestLoadAllLaterThan(t *testing.T) {
-	// Allocate a migration and write it to a file.
-	m := Migration{}
-	makeMigration := func(tn string) {
-		m.SetName("CreateTable_" + tn)
-		m.SetUpSQL("CREATE TABLE " + tn + ";")
-		m.SetDownSQL("DROP TABLE " + tn + ";")
-		m.SetVersion(time.Now().UnixNano())
-		_, err := m.WriteToFile(tmpTestMigrationsDir)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-
 	// Migration one
-	makeMigration("one")
+	makeMigrationHelper("one", t)
 
 	// Generate a timestamp
 	version := time.Now().UnixNano()
 
 	// Migrations two and three; later than "version" timestamp.
-	makeMigration("two")
-	makeMigration("three")
+	makeMigrationHelper("two", t)
+	makeMigrationHelper("three", t)
 
 	// Run LoadAllLaterThan() - later than version
 	migrations, err := LoadAllLaterThan(version, tmpTestMigrationsDir)
@@ -276,4 +244,20 @@ func TestLoadAllLaterThan(t *testing.T) {
 	if exp != act {
 		t.Errorf("\nwant %q\n got %q\n", exp, act)
 	}
+}
+
+// makeMigrationHelper creates a migration to create a table with name "tn"
+// the writes it to a file by calling WriteToFile().
+func makeMigrationHelper(tn string, t *testing.T) (Migration, string) {
+	m := Migration{}
+	m.SetName("CreateTable_" + tn)
+	m.SetUpSQL("CREATE TABLE " + tn + ";")
+	m.SetDownSQL("DROP TABLE " + tn + ";")
+	m.SetVersion(time.Now().UnixNano())
+	f, err := m.WriteToFile(tmpTestMigrationsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return m, f
 }
