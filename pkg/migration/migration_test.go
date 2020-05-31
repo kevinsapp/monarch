@@ -188,40 +188,29 @@ func TestMigrationReadFromFile(t *testing.T) {
 
 func TestLoadAllLaterThan(t *testing.T) {
 	// Allocate a migration and write it to a file.
-	m1 := Migration{}
-	m1.SetName("CreateTableUsers")
-	m1.SetUpSQL("CREATE TABLE one;")
-	m1.SetDownSQL("DROP TABLE one;")
-	m1.SetVersion(time.Now().UnixNano())
-	_, err := m1.WriteToFile(tmpTestMigrationsDir)
-	if err != nil {
-		t.Fatal(err)
+	m := Migration{}
+	makeMigration := func(tn string) {
+		m.SetName("CreateTable_" + tn)
+		m.SetUpSQL("CREATE TABLE " + tn + ";")
+		m.SetDownSQL("DROP TABLE " + tn + ";")
+		m.SetVersion(time.Now().UnixNano())
+		_, err := m.WriteToFile(tmpTestMigrationsDir)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
+
+	// Migration one
+	makeMigration("one")
 
 	// Generate a timestamp
 	version := time.Now().UnixNano()
 
-	// Generate two more migrations. These will be "later than" m1
-	m2 := Migration{}
-	m2.SetName("CreateTableUsers")
-	m2.SetUpSQL("CREATE TABLE two;")
-	m2.SetDownSQL("DROP TABLE two;")
-	m2.SetVersion(time.Now().UnixNano())
-	_, err = m2.WriteToFile(tmpTestMigrationsDir)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Migrations two and three; later than "version" timestamp.
+	makeMigration("two")
+	makeMigration("three")
 
-	m2.SetName("CreateTableUsers")
-	m2.SetUpSQL("CREATE TABLE three;")
-	m2.SetDownSQL("DROP TABLE three;")
-	m2.SetVersion(time.Now().UnixNano())
-	_, err = m2.WriteToFile(tmpTestMigrationsDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Run LoadAllLaterThan()
+	// Run LoadAllLaterThan() - later than version
 	migrations, err := LoadAllLaterThan(version, tmpTestMigrationsDir)
 	if err != nil {
 		t.Error(err)
@@ -232,9 +221,23 @@ func TestLoadAllLaterThan(t *testing.T) {
 		t.Errorf("want 2; got %d", count)
 	}
 
+	// Verifiy migration 2 version is greater than "version" timestamp
+	expv := version
+	actv := migrations[0].Version()
+	if expv >= actv {
+		t.Errorf("\nversion %d not later than %d\n", expv, actv)
+	}
+
+	// Verify migration 2 name
+	exp := "create_table_two"
+	act := migrations[0].Name()
+	if exp != act {
+		t.Errorf("\nwant %q\n got %q\n", exp, act)
+	}
+
 	// Verify migration 2 upSQL
-	exp := "CREATE TABLE two;"
-	act := migrations[0].UpSQL()
+	exp = "CREATE TABLE two;"
+	act = migrations[0].UpSQL()
 	if exp != act {
 		t.Errorf("\nwant %q\n got %q\n", exp, act)
 	}
@@ -242,6 +245,20 @@ func TestLoadAllLaterThan(t *testing.T) {
 	// Verify migration 2 downSQL
 	exp = "DROP TABLE two;"
 	act = migrations[0].DownSQL()
+	if exp != act {
+		t.Errorf("\nwant %q\n got %q\n", exp, act)
+	}
+
+	// Verifiy migration 3 version is greater than "version" timestamp
+	expv = version
+	actv = migrations[1].Version()
+	if expv >= actv {
+		t.Errorf("\nversion %d not later than %d\n", expv, actv)
+	}
+
+	// Verify migration 3 name
+	exp = "create_table_three"
+	act = migrations[1].Name()
 	if exp != act {
 		t.Errorf("\nwant %q\n got %q\n", exp, act)
 	}
