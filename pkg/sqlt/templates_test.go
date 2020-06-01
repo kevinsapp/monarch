@@ -7,18 +7,16 @@ import (
 // Test data - expected SQL
 const (
 	testCreateTableSQL string = `CREATE TABLE users (
-	id bigint NOT NULL,
-	
+	PRIMARY KEY (id),
+	id bigserial NOT NULL,
 
 	-- Specify additional fields here.
 
-
 	-- Timestamps
 	created_at timestamp(6) without time zone NOT NULL,
-	updated_at timestamp(6) without time zone NOT NULL,
-	CONSTRAINT users_pkey PRIMARY KEY (id)
-);
-`
+	updated_at timestamp(6) without time zone NOT NULL
+);`
+
 	testDropTableSQL string = `DROP TABLE users;`
 
 	testRenameTableSQL string = `ALTER TABLE users RENAME TO people;`

@@ -24,19 +24,19 @@ const (
 const (
 	// CreateTableTmpl is a SQL template for creating tables.
 	CreateTableTmpl string = `CREATE TABLE {{.Name}} (
-	id bigint NOT NULL,
-	{{range .Columns}}{{.Name}} {{.Type}},
-	{{end}}
+	PRIMARY KEY (id),
+	id bigserial NOT NULL,
+	{{- range .Columns}}
+	{{.Name}} {{.Type}},
+	{{- end}}
 
 	-- Specify additional fields here.
 
-
 	-- Timestamps
 	created_at timestamp(6) without time zone NOT NULL,
-	updated_at timestamp(6) without time zone NOT NULL,
-	CONSTRAINT {{.Name}}_pkey PRIMARY KEY (id)
-);
-`
+	updated_at timestamp(6) without time zone NOT NULL
+);`
+
 	// DropTableTmpl is a SQL template for dropping tables.
 	DropTableTmpl string = `DROP TABLE {{.Name}};`
 
