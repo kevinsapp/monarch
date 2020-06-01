@@ -131,7 +131,8 @@ func execUpMigrations(ctx context.Context, pool *pgxpool.Pool, ms []migration.Mi
 		// Execute SQL statement from migration.
 		_, err = tx.Exec(ctx, m.UpSQL())
 		if err != nil {
-			return err
+			// return err
+			return fmt.Errorf("could not execute migration %d_%s: %s", m.Version(), m.Name(), err)
 		}
 
 		// Insert migration version into schema_version table
