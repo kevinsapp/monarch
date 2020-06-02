@@ -12,7 +12,7 @@ func init() {
 	createCmd.AddCommand(createIndexCmd)
 }
 
-// createIndexCmd generates a file to create an index on a table column.
+// createIndexCmd generates a migration file to create an index on a table column.
 var createIndexCmd = &cobra.Command{
 	Use:   "index [tablename] [columnname]",
 	Short: "Generate a migration file to create an index on a table column.",
