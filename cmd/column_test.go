@@ -20,6 +20,14 @@ ADD COLUMN family_name varchar;`
 DROP COLUMN IF EXISTS given_name,
 DROP COLUMN IF EXISTS family_name;`
 
+	testRecastColumnsUpSQL string = `ALTER TABLE assets
+ALTER COLUMN serial_number TYPE bigint,
+ALTER COLUMN model_name TYPE varchar;`
+
+	// 	testRecastColumnsDownSQL string = `ALTER TABLE assets
+	// ALTER COLUMN serial_number TYPE integer,
+	// ALTER COLUMN model_name TYPE text;`
+
 	testRenameColumnsUpSQL string = `ALTER TABLE users
 RENAME COLUMN given_name TO first_name;
 
@@ -133,6 +141,57 @@ func TestDropColumnMigrations(t *testing.T) {
 	if exp != act {
 		t.Errorf("\nwant %q;\ngot %q\n", exp, act)
 	}
+}
+
+// Unit test recastColumnMigrations()
+func TestRecastColumnMigrations(t *testing.T) {
+	// Create a migrations directory.
+	cmd := &cobra.Command{}
+	args := make([]string, 0)
+	mkdirMigrations(cmd, args)
+	defer os.RemoveAll(migrationsDir) // Do cleanup
+
+	// Run recastColumnMigrations()
+	args = append(args, "assets")              // table name
+	args = append(args, "serialNumber:bigint") // first column argument
+	args = append(args, "modelName:varchar")   // second column argument
+	err := recastColumnMigration(cmd, args)    // run command
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the list of files in the migrations directory.
+	files, err := ioutil.ReadDir(migrationsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check that exactly one file was created.
+	if l := len(files); l != 1 {
+		t.Errorf("wrong number of files created: want 1; got %d", l)
+	}
+
+	// Verify that the file can be read in to a migration object.
+	path := fmt.Sprintf("%s/%s", migrationsDir, files[0].Name())
+	m := new(migration.Migration)
+	err = m.ReadFromFile(path)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Verify that the upSQL is as expected.
+	exp := testRecastColumnsUpSQL
+	act := m.UpSQL()
+	if exp != act {
+		t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	}
+
+	// // Verify that the downSQL is as expected.
+	// exp = testRecastColumnsDownSQL
+	// act = m.DownSQL()
+	// if exp != act {
+	// 	t.Errorf("\nwant %q;\n got %q\n", exp, act)
+	// }
 }
 
 // Unit test addColumnMigrations()

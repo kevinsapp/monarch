@@ -16,6 +16,7 @@ func init() {
 	migrationCmd.AddCommand(addCmd)
 	migrationCmd.AddCommand(createCmd)
 	migrationCmd.AddCommand(dropCmd)
+	migrationCmd.AddCommand(recastCmd)
 	migrationCmd.AddCommand(renameCmd)
 }
 
@@ -39,6 +40,11 @@ var createCmd = &cobra.Command{
 // dropCmd ...
 var dropCmd = &cobra.Command{
 	Use: "drop",
+}
+
+// recastCmd ...
+var recastCmd = &cobra.Command{
+	Use: "recast",
 }
 
 // renameCmd ...

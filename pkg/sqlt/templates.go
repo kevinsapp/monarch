@@ -51,6 +51,10 @@ ADD COLUMN {{$col.Name}} {{$col.Type}}{{end}};`
 	DropColumnTmpl string = `ALTER TABLE {{.Name}}{{$l := len .Columns}}{{range $i, $col := .Columns}}{{if $i}},{{end}}
 DROP COLUMN IF EXISTS {{$col.Name}}{{end}};`
 
+	// RecastColumnTmpl is a SQL template for renaming columns in a table.
+	RecastColumnTmpl string = `ALTER TABLE {{ .Name }}{{$l := len .Columns}}{{range $i, $col := .Columns}}{{if $i}},{{end}}
+ALTER COLUMN {{.Name}} TYPE {{.Type}}{{end}};`
+
 	// RenameColumnTmpl is a SQL template for renaming columns in a table.
 	RenameColumnTmpl string = `{{ $table := .Name }}{{range .Columns}}ALTER TABLE {{ $table }}
 RENAME COLUMN {{.Name}} TO {{.NewName}};

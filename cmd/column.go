@@ -11,35 +11,42 @@ import (
 func init() {
 	addCmd.AddCommand(addColumnCmd)
 	dropCmd.AddCommand(dropColumnCmd)
+	recastCmd.AddCommand(recastColumnCmd)
 	renameCmd.AddCommand(renameColumnCmd)
 }
 
-// addColumnCmd generates an "up" migration file to add a column to
-// a table and a "down" migration file to remove that column.
+// addColumnCmd generates a migration file to add a column to a table.
 var addColumnCmd = &cobra.Command{
 	Use:   "column [tableName] [ [colName:type] ... ]",
 	Short: "Generate a migration file to add a column named [colName] with type [type].",
 	RunE:  addColumnMigration,
 }
 
-// dropColumnCmd generates an "up" migration file to remove a column
-// from a table.
+// dropColumnCmd generates a migration file to remove a column from a table.
 var dropColumnCmd = &cobra.Command{
 	Use:   "column [ [name] ... ]",
 	Short: "Generate a migration file to drop a column named [colName].",
 	RunE:  dropColumnMigration,
 }
 
-// renameColumnMigrations generates an "up" migration file to rename a column from
-// [name] to [newname].
+// recastColumnCmd generates a migration file to change a column's data type.
+var recastColumnCmd = &cobra.Command{
+	Use:   "column [tableName] [ [name:newType] ... ]",
+	Short: "Generate a migration file to change column's data type to [newType].",
+	Long: `Generate a migration file to change column's data type to [newType]. This command will
+	generate a simple ALTER COLUMN statment to change the type. You may need to add a USING clause
+	if you require more complex type conversions. See the PostgreSQL documentation for details.`,
+	RunE: recastColumnMigration,
+}
+
+// renameColumnCmd generates a migration file to rename a column from [name] to [newname].
 var renameColumnCmd = &cobra.Command{
 	Use:   "column [tableName] [ [name:newName] ... ]",
 	Short: "Generate a migration file to rename a column from [name] to [newName].",
 	RunE:  renameColumnMigration,
 }
 
-// addColumnMigration creates an "up" migration file to add a column to
-// a table and a "down" migration file to remove that column.
+// addColumnMigration creates a migration file to add a column to a table.
 func addColumnMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument and a column
 	// name:type pair as the second argument.
@@ -84,8 +91,7 @@ func addColumnMigration(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// dropColumnMigration creates an "up" migration file to drop a column
-// from a table.
+// dropColumnMigration creates a migration file to drop a column from a table.
 func dropColumnMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument.
 	if len(args) < 2 {
@@ -126,9 +132,44 @@ func dropColumnMigration(cmd *cobra.Command, args []string) error {
 	return err
 }
 
-// renameColumnMigration creates an "up" migration file to rename a column from
-// [name] to [newName] a "down" migration file to rename that column from [newName]
-// to [name].
+// recastColumnMigration creates a migration file to rename a column from [name] to [newName].
+func recastColumnMigration(cmd *cobra.Command, args []string) error {
+	// Caller should supply a table name as the first argument.
+	if len(args) < 2 {
+		return errors.New("requires tableName abd columnName:newType arguments")
+	}
+
+	tableName := args[0]
+	t := new(sqlt.Table)
+	t.SetName(tableName)
+
+	// Add columns to table object
+	for _, v := range args[1:] {
+		nameType := strings.Split(v, ":")
+
+		col := sqlt.Column{}
+		col.SetName(nameType[0])
+		col.SetType(nameType[1])
+
+		t.AddColumn(col)
+	}
+
+	// Process SQL template for "up" migration.
+	upSQL, err := sqlt.ProcessTmpl(t, sqlt.RecastColumnTmpl)
+	if err != nil {
+		return err
+	}
+
+	// Create migration file.
+	err = createMigration("RecastColumnsIn_"+tableName, upSQL, "")
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+// renameColumnMigration creates a migration file to rename a column from [name] to [newName].
 func renameColumnMigration(cmd *cobra.Command, args []string) error {
 	// Caller should supply a table name as the first argument.
 	if len(args) < 2 {
