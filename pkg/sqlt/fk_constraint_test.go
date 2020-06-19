@@ -4,10 +4,10 @@ import (
 	"testing"
 )
 
-// Unit test ForeignKeyConstraint.Name()
-func TestForeignKeyConstraintName(t *testing.T) {
-	fk := ForeignKeyConstraint{}
-	fk.name = "mnrk_fk_constraint_child_parent"
+// Unit test ForeignKey.Name()
+func TestForeignKeyName(t *testing.T) {
+	fk := ForeignKey{}
+	fk.name = "mnrk_fk_child_parent"
 
 	exp := fk.name
 	act := fk.Name()
@@ -16,8 +16,8 @@ func TestForeignKeyConstraintName(t *testing.T) {
 	}
 }
 
-// Unit test ForeignKeyConstraint.SetName()
-func TestForeignKeyConstraintSetName(t *testing.T) {
+// Unit test ForeignKey.SetName()
+func TestForeignKeySetName(t *testing.T) {
 	cases := [][]string{
 		{"test", "test"},
 		{"test_case", "test_case"},
@@ -32,8 +32,8 @@ func TestForeignKeyConstraintSetName(t *testing.T) {
 		{"AAAbbb", "aa_abbb"},
 	}
 	for _, c := range cases {
-		fk := ForeignKeyConstraint{}
-		fk.SetName(c[0]) // Run ForeignKeyConstraint.SetName()
+		fk := ForeignKey{}
+		fk.SetName(c[0]) // Run ForeignKey.SetName()
 		exp := c[1]
 		act := fk.name
 		if exp != act {
@@ -42,9 +42,9 @@ func TestForeignKeyConstraintSetName(t *testing.T) {
 	}
 }
 
-// Unit test ForeignKeyConstraint.Name()
-func TestForeignKeyConstraintReferencedTableName(t *testing.T) {
-	fk := ForeignKeyConstraint{}
+// Unit test ForeignKey.Name()
+func TestForeignKeyReferencedTableName(t *testing.T) {
+	fk := ForeignKey{}
 	fk.referencedTableName = "parent_table"
 
 	exp := fk.referencedTableName
@@ -54,8 +54,8 @@ func TestForeignKeyConstraintReferencedTableName(t *testing.T) {
 	}
 }
 
-// Unit test ForeignKeyConstraint.SetName()
-func TestForeignKeyConstraintSetReferencedTableName(t *testing.T) {
+// Unit test ForeignKey.SetName()
+func TestForeignKeySetReferencedTableName(t *testing.T) {
 	cases := [][]string{
 		{"test", "test"},
 		{"test_case", "test_case"},
@@ -70,8 +70,8 @@ func TestForeignKeyConstraintSetReferencedTableName(t *testing.T) {
 		{"AAAbbb", "aa_abbb"},
 	}
 	for _, c := range cases {
-		fk := ForeignKeyConstraint{}
-		fk.SetReferencedTableName(c[0]) // Run ForeignKeyConstraint.SetReferencedTableName()
+		fk := ForeignKey{}
+		fk.SetReferencedTableName(c[0]) // Run ForeignKey.SetReferencedTableName()
 		exp := c[1]
 		act := fk.referencedTableName
 		if exp != act {
@@ -80,9 +80,9 @@ func TestForeignKeyConstraintSetReferencedTableName(t *testing.T) {
 	}
 }
 
-// Unit test ForeignKeyConstraint.ReferencingTableName()
-func TestForeignKeyConstraintReferencingTableName(t *testing.T) {
-	fk := ForeignKeyConstraint{}
+// Unit test ForeignKey.ReferencingTableName()
+func TestForeignKeyReferencingTableName(t *testing.T) {
+	fk := ForeignKey{}
 	fk.referencedTableName = "parent_table"
 
 	exp := fk.referencedTableName
@@ -92,8 +92,8 @@ func TestForeignKeyConstraintReferencingTableName(t *testing.T) {
 	}
 }
 
-// Unit test ForeignKeyConstraint.SetReferencingTableName()
-func TestForeignKeyConstraintSetReferencingTableName(t *testing.T) {
+// Unit test ForeignKey.SetReferencingTableName()
+func TestForeignKeySetReferencingTableName(t *testing.T) {
 	cases := [][]string{
 		{"test", "test"},
 		{"test_case", "test_case"},
@@ -108,8 +108,8 @@ func TestForeignKeyConstraintSetReferencingTableName(t *testing.T) {
 		{"AAAbbb", "aa_abbb"},
 	}
 	for _, c := range cases {
-		fk := ForeignKeyConstraint{}
-		fk.SetReferencingTableName(c[0]) // Run ForeignKeyConstraint.SetReferencingTableName()
+		fk := ForeignKey{}
+		fk.SetReferencingTableName(c[0]) // Run ForeignKey.SetReferencingTableName()
 		exp := c[1]
 		act := fk.referencingTableName
 		if exp != act {
