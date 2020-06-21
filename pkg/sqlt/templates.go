@@ -74,7 +74,7 @@ ADD COLUMN {{.ReferencingColumnName}} {{.ReferencingColumnType}};
 
 ALTER TABLE {{.ReferencingTableName}}
 ADD CONSTRAINT {{.Name}} FOREIGN KEY {{.ReferencingColumnName}}
-REFERENCES {{.ReferencedColumn}};`
+REFERENCES {{.ReferencedTableName}}({{.ReferencedColumnName}});`
 )
 
 // ProcessTmpl applies a data structure to a SQL template and returns a string.
