@@ -66,6 +66,15 @@ RENAME COLUMN {{.Name}} TO {{.NewName}};
 
 	// DropIndexTmpl is a SQL template for dropping and index.
 	DropIndexTmpl string = `DROP INDEX IF EXISTS {{.Name}};`
+
+	// AddForeignKeyTmpl is a SQL template for adding a foreign key column and a foreign key
+	// constraint to a table.
+	AddForeignKeyConstraintTmpl string = `ALTER TABLE {{.ReferencingTableName}}
+ADD COLUMN {{.ReferencingColumnName}} {{.ReferencingColumnType}};
+
+ALTER TABLE {{.ReferencingTableName}}
+ADD CONSTRAINT {{.Name}} FOREIGN KEY {{.ReferencingColumnName}}
+REFERENCES {{.ReferencedColumn}};`
 )
 
 // ProcessTmpl applies a data structure to a SQL template and returns a string.
