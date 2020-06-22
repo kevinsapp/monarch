@@ -26,12 +26,13 @@ monarch g m add foreignkey cars people
 monarch g m add column cars make:varchar modelYear:smallint modelName:text color:text
 monarch g m recast column cars modelName:varchar color:varchar
 monarch g m create index cars make
-# monarch g m drop table people
-# monarch g m drop table cars
+monarch g m drop foreignkey cars people
+monarch g m drop table people
+monarch g m drop table cars
 
 # Migrate schemas.
 monarch db migrate
 
 # Do cleanup.
-# monarch db drop
-# rm -rf migrations
+monarch db drop
+rm -rf migrations
