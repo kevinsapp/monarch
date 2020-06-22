@@ -13,9 +13,10 @@ func init() {
 
 // addForeignKeyCmd generates a migration file to add a foreign key column and constraint to a table.
 var addForeignKeyCmd = &cobra.Command{
-	Use:   "foreignkey [childTableName] [parentTableName]",
-	Short: "Generate a migration file to add a foreign key to a table.",
-	RunE:  addForeignKeyMigration,
+	Aliases: []string{"fk"},
+	Use:     "foreignkey [childTableName] [parentTableName]",
+	Short:   "Generate a migration file to add a foreign key to a table.",
+	RunE:    addForeignKeyMigration,
 }
 
 // addForeignKeyMigration creates a migration file to add a foreign key to a table.
