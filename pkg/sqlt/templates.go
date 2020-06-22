@@ -69,12 +69,20 @@ RENAME COLUMN {{.Name}} TO {{.NewName}};
 
 	// AddForeignKeyTmpl is a SQL template for adding a foreign key column and a foreign key
 	// constraint to a table.
-	AddForeignKeyConstraintTmpl string = `ALTER TABLE {{.ReferencingTableName}}
-ADD COLUMN {{.ReferencingColumnName}} {{.ReferencingColumnType}};
+	AddForeignKeyTmpl string = `ALTER TABLE {{.ReferencingTableName}}
+	ADD COLUMN {{.ReferencingColumnName}} {{.ReferencingColumnType}};
 
 ALTER TABLE {{.ReferencingTableName}}
-ADD CONSTRAINT {{.Name}} FOREIGN KEY {{.ReferencingColumnName}}
-REFERENCES {{.ReferencedTableName}}({{.ReferencedColumnName}});`
+	ADD CONSTRAINT {{.ConstraintName}} FOREIGN KEY ({{.ReferencingColumnName}})
+	REFERENCES {{.ReferencedTableName}} ({{.ReferencedColumnName}});`
+
+	// DropForeignKeyTmpl is a SQL template for dropping a foreign key column and a foreign key
+	// constraint from a table.
+	DropForeignKeyTmpl string = `ALTER TABLE {{.ReferencingTableName}}
+	DROP CONSTRAINT IF EXISTS {{.ConstraintName}};
+	
+ALTER TABLE {{.ReferencingTableName}}
+	DROP COLUMN IF EXISTS {{.ReferencingColumnName}};`
 )
 
 // ProcessTmpl applies a data structure to a SQL template and returns a string.
